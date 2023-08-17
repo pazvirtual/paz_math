@@ -52,6 +52,8 @@ paz::Mat::Mat(std::size_t rows, std::size_t cols) : _vals(rows*cols), _rows(rows
 
 paz::Mat::Mat(std::size_t side) : Mat(side, side) {}
 
+paz::Mat::Mat(const Vec& v) : _vals(v._vals), _rows(v._rows) {}
+
 paz::Mat paz::Mat::inv() const
 {
     if(rows() != cols())
@@ -138,11 +140,11 @@ double& paz::Mat::operator()(std::size_t i, std::size_t j)
 {
     if(i >= rows())
     {
-        throw std::runtime_error("Row index out of bounds (" + std::to_string(i) + " >= " + std::to_string(rows()) + ").");
+        throw std::runtime_error("Row index out of range.");
     }
     if(j >= cols())
     {
-        throw std::runtime_error("Column index out of bounds (" + std::to_string(i) + " >= " + std::to_string(cols()) + ").");
+        throw std::runtime_error("Column index out of range.");
     }
     return _vals[i + _rows*j];
 }
@@ -151,13 +153,41 @@ double paz::Mat::operator()(std::size_t i, std::size_t j) const
 {
     if(i >= rows())
     {
-        throw std::runtime_error("Row index out of bounds (" + std::to_string(i) + " >= " + std::to_string(rows()) + ").");
+        throw std::runtime_error("Row index out of range.");
     }
     if(j >= cols())
     {
-        throw std::runtime_error("Column index out of bounds (" + std::to_string(i) + " >= " + std::to_string(cols()) + ").");
+        throw std::runtime_error("Column index out of range.");
     }
     return _vals[i + _rows*j];
+}
+
+double& paz::Mat::operator()(std::size_t i)
+{
+    if(i >= _vals.size())
+    {
+        throw std::runtime_error("Index is out of range.");
+    }
+    return _vals[i];
+}
+
+double paz::Mat::operator()(std::size_t i) const
+{
+    if(i >= _vals.size())
+    {
+        throw std::runtime_error("Index is out of range.");
+    }
+    return _vals[i];
+}
+
+double* paz::Mat::data()
+{
+    return _vals.data();
+}
+
+const double* paz::Mat::data() const
+{
+    return _vals.data();
 }
 
 bool paz::Mat::empty() const
@@ -225,6 +255,42 @@ paz::Mat paz::Mat::operator+(const Mat& rhs) const
     return res += rhs;
 }
 
+paz::Mat& paz::Mat::operator-=(const Mat& rhs)
+{
+    if(rows() != rhs.rows() || cols() != rhs.cols())
+    {
+        throw std::runtime_error("Matrix dimensions do not match.");
+    }
+    for(std::size_t i = 0; i < size(); ++i)
+    {
+        _vals[i] -= rhs._vals[i];
+    }
+    return *this;
+}
+
+double paz::Mat::dot(const Mat& rhs) const
+{
+    if(size() != rhs.size())
+    {
+        throw std::runtime_error("Matrices must have the same size.");
+    }
+    double res = 0.;
+    for(std::size_t i = 0; i < size(); ++i)
+    {
+        for(std::size_t j = 0; j < size(); ++j)
+        {
+            res += _vals[i + _rows*j]*rhs._vals[i + _rows*j];
+        }
+    }
+    return res;
+}
+
+paz::Mat paz::Mat::operator-(const Mat& rhs) const
+{
+    auto res = *this;
+    return res -= rhs;
+}
+
 paz::Mat& paz::Mat::operator*=(double rhs)
 {
     for(auto& n : _vals)
@@ -240,12 +306,57 @@ paz::Mat paz::Mat::operator*(double rhs) const
     return res *= rhs;
 }
 
+paz::Mat& paz::Mat::operator/=(double rhs)
+{
+    for(auto& n : _vals)
+    {
+        n /= rhs;
+    }
+    return *this;
+}
+
+paz::Mat paz::Mat::operator/(double rhs) const
+{
+    auto res = *this;
+    return res /= rhs;
+}
+
 paz::Mat paz::Mat::operator-() const
 {
     auto res = *this;
     for(auto& n : res._vals)
     {
         n = -n;
+    }
+    return res;
+}
+
+paz::BlockRef paz::Mat::row(std::size_t m)
+{
+    return BlockRef(*this, m, 0, 1, cols());
+}
+
+paz::Mat paz::Mat::row(std::size_t m) const
+{
+    Mat res(1, cols());
+    for(std::size_t i = 0; i < cols(); ++i)
+    {
+        res(1, i) = _vals[m + _rows*i];
+    }
+    return res;
+}
+
+paz::BlockRef paz::Mat::col(std::size_t n)
+{
+    return BlockRef(*this, 0, n, rows(), 1);
+}
+
+paz::Mat paz::Mat::col(std::size_t n) const
+{
+    Mat res(1, rows());
+    for(std::size_t i = 0; i < rows(); ++i)
+    {
+        res(i, 1) = _vals[_rows*n + i];
     }
     return res;
 }
@@ -271,4 +382,51 @@ std::ostream& paz::operator<<(std::ostream& out, const Mat& rhs)
         out << (i + 1 < rhs.rows() ? "\n" : "");
     }
     return out;
+}
+
+paz::Vec paz::Vec::IdQuat()
+{
+    paz::Vec q(4);
+    q(0) = 0.;
+    q(1) = 0.;
+    q(2) = 0.;
+    q(3) = 1.;
+    return q;
+}
+
+paz::Vec::Vec(std::size_t rows) : Mat(rows, 1) {}
+
+paz::BlockRef::BlockRef(Mat& mat, std::size_t startRow, std::size_t startCol,
+    std::size_t numRows, std::size_t numCols) : _baseData(mat.data()),
+    _baseRows(mat.rows()), _startRow(startRow), _startCol(startCol), _rows(
+    numRows), _cols(numCols) {}
+
+paz::BlockRef::operator Mat() const
+{
+    paz::Mat res(_rows, _cols);
+    for(std::size_t i = 0; i < _rows; ++i)
+    {
+        for(std::size_t j = 0; j < _cols; ++j)
+        {
+            res(i, j) = *(_baseData + _startRow + i + _baseRows*(_startCol +
+                j));
+        }
+    }
+    return res;
+}
+
+paz::BlockRef& paz::BlockRef::operator=(const paz::Mat& rhs)
+{
+    if(_rows != rhs.rows() || _cols != rhs.cols())
+    {
+        throw std::runtime_error("Matrix dimensions do not match.");
+    }
+    for(std::size_t i = 0; i < _rows; ++i)
+    {
+        for(std::size_t j = 0; j < _cols; ++j)
+        {
+            *(_baseData + i + _baseRows*j) = rhs(i, j);
+        }
+    }
+    return *this;
 }

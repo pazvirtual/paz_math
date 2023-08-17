@@ -3,11 +3,14 @@
 
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 namespace paz
 {
     double randn();
 
+    class BlockRef;
+    class Vec;
     class Mat
     {
         std::vector<double> _vals;
@@ -24,6 +27,7 @@ namespace paz
 
         Mat(std::size_t rows, std::size_t cols);
         Mat(std::size_t side);
+        Mat(const Vec& v);
 
         Mat inv() const;
         Mat solve(const Mat& b) const; // x : (*this)*x = b
@@ -31,9 +35,13 @@ namespace paz
         Mat trans() const;
         double& operator()(std::size_t i, std::size_t j);
         double operator()(std::size_t i, std::size_t j) const;
+        double& operator()(std::size_t i);
+        double operator()(std::size_t i) const;
         std::size_t size() const;
         std::size_t rows() const;
         std::size_t cols() const;
+        double* data();
+        const double* data() const;
         bool empty() const;
         auto begin()
         {
@@ -55,15 +63,49 @@ namespace paz
         Mat operator*(const Mat& rhs) const;
         Mat& operator+=(const Mat& rhs);
         Mat operator+(const Mat& rhs) const;
+        Mat& operator-=(const Mat& rhs);
+        Mat operator-(const Mat& rhs) const;
         Mat& operator*=(double rhs);
         Mat operator*(double rhs) const;
+        Mat& operator/=(double rhs);
+        Mat operator/(double rhs) const;
         Mat operator-() const;
+        double dot(const Mat& rhs) const;
+        BlockRef row(std::size_t m);
+        Mat row(std::size_t m) const;
+        BlockRef col(std::size_t n);
+        Mat col(std::size_t n) const;
     };
 
     Mat& operator*=(double lhs, Mat& rhs);
     Mat operator*(double lhs, const Mat& rhs);
 
     std::ostream& operator<<(std::ostream& out, const paz::Mat& x);
+
+    class Vec : public Mat
+    {
+    public:
+        static Vec IdQuat();
+
+        Vec(std::size_t rows);
+    };
+
+    class BlockRef
+    {
+        double* const _baseData;
+        const std::size_t _baseRows;
+        const std::size_t _startRow;
+        const std::size_t _startCol;
+        const std::size_t _rows;
+        const std::size_t _cols;
+
+    public:
+        BlockRef(Mat& mat, std::size_t startRow, std::size_t startCol, std::
+            size_t numRows, std::size_t numCols);
+        BlockRef& operator=(const BlockRef& rhs) = delete;
+        operator Mat() const;
+        BlockRef& operator=(const Mat& rhs);
+    };
 }
 
 #endif
