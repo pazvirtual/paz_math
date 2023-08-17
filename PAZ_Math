@@ -95,6 +95,7 @@ namespace paz
         Mat(const Vec& v);
         Mat(const std::initializer_list<std::initializer_list<double>>& list);
 
+        double det() const;
         Mat inv() const;
         Mat solve(const Mat& b) const; // x : (*this)*x = b
         Mat chol() const;

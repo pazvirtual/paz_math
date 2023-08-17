@@ -76,6 +76,17 @@ paz::Mat::Mat(const std::initializer_list<std::initializer_list<double>>& list)
     }
 }
 
+double paz::Mat::det() const
+{
+    if(rows() != cols() || empty())
+    {
+        throw std::runtime_error("Matrix must be square.");
+    }
+    Eigen::MatrixXd m(rows(), cols());
+    std::copy(begin(), end(), m.data());
+    return m.determinant();
+}
+
 paz::Mat paz::Mat::inv() const
 {
     if(rows() != cols())

@@ -17,6 +17,8 @@ int main()
     const auto c = paz::randn();
 
     PRINT(a)
+    PRINT(a.det())
+    PRINT(1./a.inv().det())
     PRINT(a.chol())
     PRINT(m)
     PRINT(c)
