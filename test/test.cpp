@@ -40,6 +40,7 @@ int main()
         std::cout << p[i] << (i + 1 < p.size() ? " " : "");
     }
     std::cout << std::endl << std::endl;
+    PRINT(m.col(0).rep(2, 3))
 
     PRINT(a.chol())
     PRINT(m)

@@ -62,6 +62,7 @@ namespace paz
         void qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const;
         Mat trans() const;
         Vec diag() const;
+        Mat rep(std::size_t m, std::size_t n) const;
         double& operator()(std::size_t i, std::size_t j);
         double operator()(std::size_t i, std::size_t j) const;
         double& operator()(std::size_t i);
@@ -91,6 +92,8 @@ namespace paz
         double normSq() const;
         double norm() const;
         Mat normalized() const;
+        Mat prod(const Mat& rhs) const; // elementwise
+        Mat quot(const Mat& rhs) const; // elementwise
         Mat& operator*=(const Mat& rhs);
         Mat operator*(const Mat& rhs) const;
         Mat& operator+=(const Mat& rhs);

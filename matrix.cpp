@@ -388,6 +388,17 @@ paz::Vec paz::Mat::diag() const
     return res;
 }
 
+paz::Mat paz::Mat::rep(std::size_t m, std::size_t n) const
+{
+    paz::Mat res(m*rows(), n*cols());
+    for(std::size_t i = 0; i < m*n; ++i)
+    {
+        std::copy(_vals.begin(), _vals.end(), res._vals.begin() + rows()*cols()*
+            i);
+    }
+    return res;
+}
+
 double& paz::Mat::operator()(std::size_t i, std::size_t j)
 {
     if(i >= rows())
@@ -475,6 +486,34 @@ double paz::Mat::norm() const
 paz::Mat paz::Mat::normalized() const
 {
     return (*this)/norm();
+}
+
+paz::Mat paz::Mat::prod(const Mat& rhs) const
+{
+    if(rows() != rhs.rows() || cols() != rhs.cols())
+    {
+        throw std::runtime_error("Matrix dimensions do not match.");
+    }
+    auto res = *this;
+    for(std::size_t i = 0; i < size(); ++i)
+    {
+        res._vals[i] *= rhs._vals[i];
+    }
+    return res;
+}
+
+paz::Mat paz::Mat::quot(const Mat& rhs) const
+{
+    if(rows() != rhs.rows() || cols() != rhs.cols())
+    {
+        throw std::runtime_error("Matrix dimensions do not match.");
+    }
+    auto res = *this;
+    for(std::size_t i = 0; i < size(); ++i)
+    {
+        res._vals[i] /= rhs._vals[i];
+    }
+    return res;
 }
 
 paz::Mat& paz::Mat::operator*=(const Mat& rhs)
