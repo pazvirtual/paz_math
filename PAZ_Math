@@ -35,6 +35,7 @@ namespace paz
         Mat inv() const;
         Mat solve(const Mat& b) const; // x : (*this)*x = b
         Mat chol() const;
+        Mat cholUpdate(const Mat& m, double a) const;
         Mat trans() const;
         double& operator()(std::size_t i, std::size_t j);
         double operator()(std::size_t i, std::size_t j) const;

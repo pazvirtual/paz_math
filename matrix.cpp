@@ -165,6 +165,44 @@ paz::Mat paz::Mat::chol() const
     return res;
 }
 
+paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const
+{
+    if(empty())
+    {
+        return *this;
+    }
+    if(rows() != cols())
+    {
+        throw std::logic_error("Matrix must be square.");
+    }
+    if(rows() != m.rows())
+    {
+        throw std::logic_error("Matrices must have the same number of rows.");
+    }
+    Eigen::MatrixXd l(rows(), cols());
+    std::copy(begin(), end(), l.data());
+    Eigen::MatrixXd eigenM(m.rows(), m.cols());
+    std::copy(m.begin(), m.end(), eigenM.data());
+    if(l.hasNaN() || eigenM.hasNaN())
+    {
+        throw std::runtime_error("Matrix contains NaN.");
+    }
+    Eigen::LLT<Eigen::MatrixXd> llt(Eigen::MatrixXd{});
+    const_cast<Eigen::MatrixXd&>(llt.matrixLLT()) = l;
+    for(std::size_t i = 0; i < m.cols(); ++i)
+    {
+        llt.rankUpdate(eigenM.col(i), a);
+        if(llt.info() == Eigen::NumericalIssue)
+        {
+            throw std::runtime_error("Cholesky update failed.");
+        }
+    }
+    l = llt.matrixL();
+    Mat res(rows(), cols());
+    std::copy(l.data(), l.data() + l.size(), res.begin());
+    return res;
+}
+
 paz::Mat paz::Mat::trans() const
 {
     Mat res(cols(), rows());
