@@ -39,9 +39,6 @@ ARFLAGS := -rcs
 SRC := $(wildcard *.cpp)
 OBJ := $(SRC:.cpp=.o)
 
-REINSTALLHEADER := $(shell cmp -s $(PROJNAME) $(INCLPATH)/$(PROJNAME); echo $$?)
-REINSTALLLIB := $(shell cmp -s lib$(LIBNAME).a $(LIBPATH)/lib$(LIBNAME).a; echo $$?)
-
 print-% : ; @echo $* = $($*)
 
 .PHONY: test
@@ -51,23 +48,9 @@ lib$(LIBNAME).a: $(OBJ)
 	$(RM) lib$(LIBNAME).a
 	ar $(ARFLAGS) lib$(LIBNAME).a $^
 
-ifneq ($(REINSTALLHEADER), 0)
-    ifneq ($(REINSTALLLIB), 0)
 install: $(PROJNAME) lib$(LIBNAME).a
-	cp $(PROJNAME) $(INCLPATH)/
-	cp lib$(LIBNAME).a $(LIBPATH)/
-    else
-install: $(PROJNAME) lib$(LIBNAME).a
-	cp $(PROJNAME) $(INCLPATH)/
-    endif
-else
-    ifneq ($(REINSTALLLIB), 0)
-install: $(PROJNAME) lib$(LIBNAME).a
-	cp lib$(LIBNAME).a $(LIBPATH)/
-    else
-install: $(PROJNAME) lib$(LIBNAME).a
-    endif
-endif
+	cmp -s $(PROJNAME) $(INCLPATH)/$(PROJNAME) || cp $(PROJNAME) $(INCLPATH)/
+	cmp -s lib$(LIBNAME).a $(LIBPATH)/lib$(LIBNAME).a || cp lib$(LIBNAME).a $(LIBPATH)/
 
 test: lib$(LIBNAME).a
 	$(MAKE) -C test
