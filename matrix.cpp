@@ -205,6 +205,18 @@ paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const
 
 paz::Mat paz::Mat::trans() const
 {
+    if(_rows == 1)
+    {
+        auto res = *this;
+        res._rows = res.size();
+        return res;
+    }
+    if(cols() == 1)
+    {
+        auto res = *this;
+        res._rows = 1;
+        return res;
+    }
     Mat res(cols(), rows());
     for(std::size_t i = 0; i < _rows; ++i)
     {
@@ -426,34 +438,44 @@ paz::Mat paz::Mat::operator-() const
     return res;
 }
 
+paz::BlockRef paz::Mat::block(std::size_t startRow, std::size_t startCol, std::
+    size_t numRows, std::size_t numCols)
+{
+    return BlockRef(*this, startRow, startCol, numRows, numCols);
+}
+
+paz::Mat paz::Mat::block(std::size_t startRow, std::size_t startCol, std::size_t
+    numRows, std::size_t numCols) const
+{
+    Mat res(numRows, numCols);
+    for(std::size_t i = 0; i < numRows; ++i)
+    {
+        for(std::size_t j = 0; j < numCols; ++j)
+        {
+            res(i, j) = (*this)(startRow + i, startCol + j);
+        }
+    }
+    return res;
+}
+
 paz::BlockRef paz::Mat::row(std::size_t m)
 {
-    return BlockRef(*this, m, 0, 1, cols());
+    return block(m, 0, 1, cols());
 }
 
 paz::Mat paz::Mat::row(std::size_t m) const
 {
-    Mat res(1, cols());
-    for(std::size_t i = 0; i < cols(); ++i)
-    {
-        res(1, i) = _vals[m + _rows*i];
-    }
-    return res;
+    return block(m, 0, 1, cols());
 }
 
 paz::BlockRef paz::Mat::col(std::size_t n)
 {
-    return BlockRef(*this, 0, n, rows(), 1);
+    return block(0, n, rows(), 1);
 }
 
 paz::Mat paz::Mat::col(std::size_t n) const
 {
-    Mat res(1, rows());
-    for(std::size_t i = 0; i < rows(); ++i)
-    {
-        res(i, 1) = _vals[_rows*n + i];
-    }
-    return res;
+    return block(0, n, rows(), 1);
 }
 
 paz::Mat& paz::operator*=(double lhs, Mat& rhs)
