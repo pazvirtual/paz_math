@@ -22,8 +22,6 @@ paz::Vec paz::Vec::IdQuat()
     return {{0., 0., 0., 1.}};
 }
 
-paz::Vec::Vec() {}
-
 paz::Vec::Vec(std::size_t rows) : Mat(rows, 1) {}
 
 paz::Vec::Vec(const Mat& m) : Mat(m)

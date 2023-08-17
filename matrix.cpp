@@ -47,8 +47,6 @@ paz::Mat paz::Mat::Identity(std::size_t side)
     return m;
 }
 
-paz::Mat::Mat() : _rows(0) {}
-
 paz::Mat::Mat(std::size_t rows, std::size_t cols) : _vals(rows*cols), _rows(
     rows) {}
 

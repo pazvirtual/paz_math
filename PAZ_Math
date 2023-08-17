@@ -29,7 +29,7 @@ namespace paz
     class Mat
     {
         std::vector<double> _vals;
-        std::size_t _rows;
+        std::size_t _rows = 0;
 
     public:
         static Mat Constant(std::size_t rows, std::size_t cols, double c);
@@ -40,7 +40,7 @@ namespace paz
         static Mat Ones(std::size_t side);
         static Mat Identity(std::size_t side);
 
-        Mat();
+        Mat() = default;
         Mat(std::size_t rows, std::size_t cols);
         Mat(std::size_t side);
         Mat(const Vec& v);
@@ -115,7 +115,7 @@ namespace paz
         static Vec Ones(std::size_t rows);
         static Vec IdQuat();
 
-        Vec();
+        Vec() = default;
         Vec(std::size_t rows);
         Vec(const Mat& m);
         Vec(const std::initializer_list<std::initializer_list<double>>& list);
