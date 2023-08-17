@@ -2,7 +2,7 @@
 
 paz::Vec paz::Vec::Constant(std::size_t rows, double c)
 {
-    paz::Vec v(rows);
+    Vec v(rows);
     std::fill(v.begin(), v.end(), c);
     return v;
 }

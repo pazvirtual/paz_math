@@ -1,10 +1,10 @@
 #include "PAZ_Math"
-#define eigen_assert(X) { if(!(X)) throw std::runtime_error(#X); }
+#define eigen_assert(x){ if(!(x)) throw std::runtime_error(#x); }
 #include "Eigen"
 
 paz::Mat paz::Mat::Constant(std::size_t rows, std::size_t cols, double c)
 {
-    paz::Mat m(rows, cols);
+    Mat m(rows, cols);
     std::fill(m.begin(), m.end(), c);
     return m;
 }
@@ -422,7 +422,7 @@ paz::Mat paz::Mat::block(std::size_t startRow, std::size_t startCol, std::
     {
         throw std::runtime_error("Block is out of range.");
     }
-    paz::Mat res(numRows, numCols);
+    Mat res(numRows, numCols);
     for(std::size_t i = 0; i < numRows; ++i)
     {
         for(std::size_t j = 0; j < numCols; ++j)
