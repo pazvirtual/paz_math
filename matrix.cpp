@@ -63,7 +63,7 @@ paz::Mat::Mat(const std::initializer_list<std::initializer_list<double>>& list)
     {
         return;
     }
-    const std::size_t cols = *list.begin()->begin();
+    const std::size_t cols = list.begin()->size();
     _vals.resize(_rows*cols);
     for(std::size_t i = 0; i < _rows; ++i)
     {
@@ -76,24 +76,6 @@ paz::Mat::Mat(const std::initializer_list<std::initializer_list<double>>& list)
             _vals[i + _rows*j] = *((list.begin() + i)->begin() + j);
          }
     }
-}
-
-paz::Mat::operator Vec&()
-{
-    if(!empty() && cols() != 1)
-    {
-        throw std::runtime_error("Not a vector or empty matrix.");
-    }
-    return *this;
-}
-
-paz::Mat::operator const Vec&() const
-{
-    if(!empty() && cols() != 1)
-    {
-        throw std::runtime_error("Not a vector or empty matrix.");
-    }
-    return *this;
 }
 
 paz::Mat paz::Mat::inv() const

@@ -30,8 +30,6 @@ namespace paz
         Mat(std::size_t side);
         Mat(const Vec& v);
         Mat(const std::initializer_list<std::initializer_list<double>>& list);
-        operator Vec&();
-        operator const Vec&() const;
         Mat inv() const;
         Mat solve(const Mat& b) const; // x : (*this)*x = b
         Mat chol() const;
@@ -103,6 +101,7 @@ namespace paz
 
         Vec();
         Vec(std::size_t rows);
+        Vec(const Mat& m);
         Vec(const std::initializer_list<std::initializer_list<double>>& list);
         Vec cross(const Vec& rhs) const;
         BlockRef segment(std::size_t start, std::size_t n);

@@ -26,6 +26,14 @@ paz::Vec::Vec() {}
 
 paz::Vec::Vec(std::size_t rows) : Mat(rows, 1) {}
 
+paz::Vec::Vec(const Mat& m) : Mat(m)
+{
+    if(rows() && cols() != 1)
+    {
+        throw std::runtime_error("Matrix must be a column vector or emtpy.");
+    }
+}
+
 paz::Vec::Vec(const std::initializer_list<std::initializer_list<double>>& list)
 {
     if(!list.size())
