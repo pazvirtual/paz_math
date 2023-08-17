@@ -195,7 +195,14 @@ paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const
     const_cast<Eigen::MatrixXd&>(llt.matrixLLT()) = l;
     for(std::size_t i = 0; i < m.cols(); ++i)
     {
-        llt.rankUpdate(eigenM.col(i), a);
+        if(a < 0.)
+        {
+            llt.rankUpdate(eigenM.col(i), -std::sqrt(-a));
+        }
+        else
+        {
+            llt.rankUpdate(eigenM.col(i), std::sqrt(a));
+        }
         if(llt.info() == Eigen::NumericalIssue)
         {
             throw std::runtime_error("Cholesky update failed.");
