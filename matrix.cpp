@@ -74,7 +74,7 @@ paz::Mat::Mat(const std::initializer_list<std::initializer_list<double>>& list)
         for(std::size_t j = 0; j < cols; ++j)
         {
             _vals[i + _rows*j] = *((list.begin() + i)->begin() + j);
-         }
+        }
     }
 }
 
@@ -366,10 +366,7 @@ double paz::Mat::dot(const Mat& rhs) const
     double res = 0.;
     for(std::size_t i = 0; i < size(); ++i)
     {
-        for(std::size_t j = 0; j < size(); ++j)
-        {
-            res += _vals[i + _rows*j]*rhs._vals[i + _rows*j];
-        }
+        res += _vals[i]*rhs._vals[i];
     }
     return res;
 }
@@ -420,29 +417,44 @@ paz::Mat paz::Mat::operator-() const
     return res;
 }
 
-paz::BlockRef paz::Mat::block(std::size_t startRow, std::size_t startCol, std::
-    size_t numRows, std::size_t numCols)
+paz::Mat paz::Mat::block(std::size_t startRow, std::size_t startCol, std::
+    size_t numRows, std::size_t numCols) const
 {
-    return BlockRef(*this, startRow, startCol, numRows, numCols);
-}
-
-paz::Mat paz::Mat::block(std::size_t startRow, std::size_t startCol, std::size_t
-    numRows, std::size_t numCols) const
-{
-    Mat res(numRows, numCols);
+    if(startRow + numRows > rows() || startCol + numCols > cols())
+    {
+        throw std::runtime_error("Block is out of range.");
+    }
+    paz::Mat res(numRows, numCols);
     for(std::size_t i = 0; i < numRows; ++i)
     {
         for(std::size_t j = 0; j < numCols; ++j)
         {
-            res(i, j) = (*this)(startRow + i, startCol + j);
+            res._vals[i + res._rows*j] = _vals[startRow + i + _rows*(startCol +
+                j)];
         }
     }
     return res;
 }
 
-paz::BlockRef paz::Mat::row(std::size_t m)
+void paz::Mat::setBlock(std::size_t startRow, std::size_t startCol, std::
+    size_t numRows, std::size_t numCols, const Mat& rhs)
 {
-    return block(m, 0, 1, cols());
+    if(startRow + numRows > rows() || startCol + numCols > cols())
+    {
+        throw std::runtime_error("Block is out of range.");
+    }
+    if(rhs.rows() != numRows || rhs.cols() != numCols)
+    {
+        throw std::runtime_error("Matrix dimensions do not match.");
+    }
+    for(std::size_t i = 0; i < numRows; ++i)
+    {
+        for(std::size_t j = 0; j < numCols; ++j)
+        {
+            _vals[startRow + i + _rows*(startCol + j)] = rhs._vals[i + rhs.
+                _rows*j];
+        }
+    }
 }
 
 paz::Mat paz::Mat::row(std::size_t m) const
@@ -450,14 +462,33 @@ paz::Mat paz::Mat::row(std::size_t m) const
     return block(m, 0, 1, cols());
 }
 
-paz::BlockRef paz::Mat::col(std::size_t n)
+void paz::Mat::setRow(std::size_t m, const Mat& rhs)
 {
-    return block(0, n, rows(), 1);
+    if(rhs.rows() != 1 || rhs.cols() != cols())
+    {
+        throw std::runtime_error("Matrix dimensions do not match.");
+    }
+    for(std::size_t i = 0; i < _rows; ++i)
+    {
+        _vals[m + _rows*i] = rhs._vals[i];
+    }
 }
 
 paz::Mat paz::Mat::col(std::size_t n) const
 {
     return block(0, n, rows(), 1);
+}
+
+void paz::Mat::setCol(std::size_t n, const Mat& rhs)
+{
+    if(rhs.rows() != rows() || rhs.cols() != 1)
+    {
+        throw std::runtime_error("Matrix dimensions do not match.");
+    }
+    for(std::size_t i = 0; i < _rows; ++i)
+    {
+        _vals[i + _rows*n] = rhs._vals[i];
+    }
 }
 
 paz::Mat& paz::operator*=(double lhs, Mat& rhs)

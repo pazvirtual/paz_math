@@ -2,14 +2,29 @@
 #define PAZ_MATH
 
 #include <iostream>
-#include <vector>
 #include <cmath>
+#include <vector>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846264338328
+#endif
 
 namespace paz
 {
     double randn();
+    double uniform();
+    double uniform(double a, double b);
 
-    class BlockRef;
+    inline double fract(const double n)
+    {
+        return n - std::floor(n);
+    }
+
+    inline double normalize_angle(const double n)
+    {
+        return fract(n/(2.*M_PI))*2.*M_PI;
+    }
+
     class Vec;
     class Mat
     {
@@ -30,6 +45,7 @@ namespace paz
         Mat(std::size_t side);
         Mat(const Vec& v);
         Mat(const std::initializer_list<std::initializer_list<double>>& list);
+
         Mat inv() const;
         Mat solve(const Mat& b) const; // x : (*this)*x = b
         Mat chol() const;
@@ -76,14 +92,14 @@ namespace paz
         Mat operator/(double rhs) const;
         Mat operator-() const;
         double dot(const Mat& rhs) const;
-        BlockRef block(std::size_t startRow, std::size_t startCol, std::size_t
-            numRows, std::size_t numCols);
         Mat block(std::size_t startRow, std::size_t startCol, std::size_t
             numRows, std::size_t numCols) const;
-        BlockRef row(std::size_t m);
+        void setBlock(std::size_t startRow, std::size_t startCol, std::size_t
+            numRows, std::size_t numCols, const Mat& rhs);
         Mat row(std::size_t m) const;
-        BlockRef col(std::size_t n);
+        void setRow(std::size_t m, const Mat& rhs);
         Mat col(std::size_t n) const;
+        void setCol(std::size_t n, const Mat& rhs);
     };
 
     Mat& operator*=(double lhs, Mat& rhs);
@@ -103,13 +119,14 @@ namespace paz
         Vec(std::size_t rows);
         Vec(const Mat& m);
         Vec(const std::initializer_list<std::initializer_list<double>>& list);
-        Vec cross(const Vec& rhs) const;
-        BlockRef segment(std::size_t start, std::size_t n);
+
         Vec segment(std::size_t start, std::size_t n) const;
-        BlockRef head(std::size_t n);
+        void setSegment(std::size_t start, std::size_t n, const Vec& rhs) const;
         Vec head(std::size_t n) const;
-        BlockRef tail(std::size_t n);
+        void head(std::size_t n, const Vec& rhs) const;
         Vec tail(std::size_t n) const;
+        void tail(std::size_t n, const Vec& rhs) const;
+        Vec cross(const Vec& rhs) const;
     };
 
     Mat to_mat(const Vec& q);
@@ -117,26 +134,7 @@ namespace paz
     Vec qinv(const Vec& q);
     Mat xi(const Vec& q);
     Vec qmult(const Vec& p, const Vec& q);
-
-    class BlockRef
-    {
-        friend class Mat;
-
-        double* const _baseData;
-        const std::size_t _baseRows;
-        const std::size_t _startRow;
-        const std::size_t _startCol;
-        const std::size_t _rows;
-        const std::size_t _cols;
-
-        BlockRef(Mat& mat, std::size_t startRow, std::size_t startCol, std::
-            size_t numRows, std::size_t numCols);
-
-    public:
-        BlockRef& operator=(const BlockRef& rhs) = delete;
-        operator Mat() const;
-        BlockRef& operator=(const Mat& rhs);
-    };
+    Vec axis_angle(const Vec& axis, double angle);
 }
 
 #endif

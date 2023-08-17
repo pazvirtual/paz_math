@@ -102,3 +102,9 @@ paz::Vec paz::qmult(const Vec& p, const Vec& q)
     const Vec rVec = q(3)*pVec + p(3)*qVec - pVec.cross(qVec);
     return {{rVec(0), rVec(1), rVec(2), p(3)*q(3) - pVec.dot(qVec)}};
 }
+
+paz::Vec paz::axis_angle(const Vec& axis, double angle)
+{
+    const double s = std::sin(0.5*angle);
+    return Vec{{s*axis(0), s*axis(1), s*axis(2), std::cos(0.5*angle)}};
+}

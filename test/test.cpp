@@ -22,4 +22,8 @@ int main()
     PRINT(c)
     PRINT(a.chol().cholUpdate(m, c))
     PRINT((a + m*m.trans()*c).chol())
+
+    auto aNew = a;
+    aNew.setCol(0, paz::Vec::Ones(aNew.rows()));
+    PRINT(aNew)
 }

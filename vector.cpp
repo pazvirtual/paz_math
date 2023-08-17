@@ -30,7 +30,7 @@ paz::Vec::Vec(const Mat& m) : Mat(m)
 {
     if(rows() && cols() != 1)
     {
-        throw std::runtime_error("Matrix must be a column vector or emtpy.");
+        throw std::runtime_error("Matrix must be a column vector or empty.");
     }
 }
 
@@ -48,29 +48,14 @@ paz::Vec::Vec(const std::initializer_list<std::initializer_list<double>>& list)
     std::copy(list.begin()->begin(), list.begin()->end(), begin());
 }
 
-paz::BlockRef paz::Vec::segment(std::size_t start, std::size_t n)
-{
-    return block(start, 0, n, 1);
-}
-
 paz::Vec paz::Vec::segment(std::size_t start, std::size_t n) const
 {
     return block(start, 0, n, 1);
 }
 
-paz::BlockRef paz::Vec::head(std::size_t n)
-{
-    return segment(0, n);
-}
-
 paz::Vec paz::Vec::head(std::size_t n) const
 {
     return segment(0, n);
-}
-
-paz::BlockRef paz::Vec::tail(std::size_t n)
-{
-    return segment(size() - 1 - n, n);
 }
 
 paz::Vec paz::Vec::tail(std::size_t n) const

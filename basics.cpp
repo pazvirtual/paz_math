@@ -11,3 +11,15 @@ double paz::randn()
     std::normal_distribution<double> dis(0., 1.);
     return dis(RandomEngine);
 }
+
+double paz::uniform()
+{
+    std::uniform_real_distribution<double> dis(0., 1.);
+    return dis(RandomEngine);
+}
+
+double paz::uniform(double a, double b)
+{
+    std::uniform_real_distribution<double> dis(a, b);
+    return dis(RandomEngine);
+}
