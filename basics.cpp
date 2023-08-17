@@ -12,6 +12,12 @@ double paz::randn()
     return dis(RandomEngine);
 }
 
+int paz::randi(int a, int b)
+{
+    std::uniform_int_distribution<int> dis(a, b);
+    return dis(RandomEngine);
+}
+
 double paz::uniform()
 {
     std::uniform_real_distribution<double> dis(0., 1.);
