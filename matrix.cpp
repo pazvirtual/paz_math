@@ -1,6 +1,7 @@
 #include "PAZ_Math"
 #define eigen_assert(x){ if(!(x)) throw std::runtime_error(#x); }
 #include "Eigen"
+#include <iostream>
 
 paz::Mat paz::Mat::Constant(std::size_t rows, std::size_t cols, double c)
 {
@@ -192,6 +193,146 @@ paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const
     Mat res(rows(), cols());
     std::copy(l.data(), l.data() + l.size(), res.begin());
     return res;
+}
+
+paz::Vec paz::Mat::eig() const
+{
+    if(empty())
+    {
+        return {};
+    }
+    if(rows() != cols())
+    {
+        throw std::runtime_error("Matrix must be square.");
+    }
+    Eigen::MatrixXd m(rows(), cols());
+    std::copy(begin(), end(), m.data());
+    if(m.hasNaN())
+    {
+        throw std::runtime_error("Matrix contains NaN.");
+    }
+    Eigen::EigenSolver<Eigen::MatrixXd> eig(m);
+    if(eig.info() == Eigen::NumericalIssue)
+    {
+        throw std::runtime_error("Eigendecomposition failed.");
+    }
+    Vec vals(rows());
+    for(std::size_t i = 0; i < rows(); ++i)
+    {
+        vals(i) = eig.eigenvalues()(i).imag() ? std::nan("") : eig. //TEMP
+            eigenvalues()(i).real();
+    }
+    return vals;
+}
+
+paz::Vec paz::Mat::eig(Mat& vecs) const
+{
+    if(empty())
+    {
+        vecs = {};
+        return {};
+    }
+    if(rows() != cols())
+    {
+        throw std::runtime_error("Matrix must be square.");
+    }
+    Eigen::MatrixXd m(rows(), cols());
+    std::copy(begin(), end(), m.data());
+    if(m.hasNaN())
+    {
+        throw std::runtime_error("Matrix contains NaN.");
+    }
+    Eigen::EigenSolver<Eigen::MatrixXd> eig(m);
+    if(eig.info() == Eigen::NumericalIssue)
+    {
+        throw std::runtime_error("Eigendecomposition failed.");
+    }
+    Vec vals(rows());
+    for(std::size_t i = 0; i < rows(); ++i)
+    {
+        vals(i) = eig.eigenvalues()(i).imag() ? std::nan("") : eig. //TEMP
+            eigenvalues()(i).real();
+    }
+    vecs = Mat(rows(), cols());
+    for(std::size_t i = 0; i < rows(); ++i)
+    {
+        for(std::size_t j = 0; j < cols(); ++j)
+        {
+            vecs(i, j) = eig.eigenvectors()(i, j).imag() ? std::nan("") : eig. //TEMP
+                eigenvectors()(i, j).real();
+        }
+    }
+    return vals;
+}
+
+void paz::Mat::qr(Mat& q, Mat& r) const
+{
+    if(empty())
+    {
+        q = {};
+        r = {};
+        return;
+    }
+    if(rows() < cols())
+    {
+        throw std::runtime_error("Matrix must have at least as many rows as col"
+            "umns.");
+    }
+    Eigen::MatrixXd m(rows(), cols());
+    std::copy(begin(), end(), m.data());
+    if(m.hasNaN())
+    {
+        throw std::runtime_error("Matrix contains NaN.");
+    }
+    Eigen::HouseholderQR<Eigen::MatrixXd> qr(m);
+    {
+        const Eigen::MatrixXd eigenQ = qr.householderQ();
+        q = Mat(rows(), rows());
+        std::copy(eigenQ.data(), eigenQ.data() + eigenQ.size(), q.begin());
+    }
+    {
+        const Eigen::MatrixXd eigenR = qr.matrixQR().triangularView<Eigen::
+            Upper>();
+        r = Mat(rows(), cols());
+        std::copy(eigenR.data(), eigenR.data() + eigenR.size(), r.begin());
+    }
+}
+
+void paz::Mat::qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const
+{
+    if(empty())
+    {
+        q = {};
+        r = {};
+        p = {};
+        return;
+    }
+    if(rows() < cols())
+    {
+        throw std::runtime_error("Matrix must have at least as many rows as col"
+            "umns.");
+    }
+    Eigen::MatrixXd m(rows(), cols());
+    std::copy(begin(), end(), m.data());
+    if(m.hasNaN())
+    {
+        throw std::runtime_error("Matrix contains NaN.");
+    }
+    Eigen::ColPivHouseholderQR<Eigen::MatrixXd> qr(m);
+    {
+        const Eigen::MatrixXd eigenQ = qr.householderQ();
+        q = Mat(rows(), rows());
+        std::copy(eigenQ.data(), eigenQ.data() + eigenQ.size(), q.begin());
+    }
+    {
+        const Eigen::MatrixXd eigenR = qr.matrixQR().triangularView<Eigen::
+            Upper>();
+        r = Mat(rows(), cols());
+        std::copy(eigenR.data(), eigenR.data() + eigenR.size(), r.begin());
+    }
+    p.resize(cols());
+    std::copy(qr.colsPermutation().indices().begin(), qr.colsPermutation().
+        indices().end(), p.begin());
 }
 
 paz::Mat paz::Mat::trans() const

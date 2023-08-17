@@ -55,6 +55,10 @@ namespace paz
         Mat solve(const Mat& b) const; // x : (*this)*x = b
         Mat chol() const;
         Mat cholUpdate(const Mat& m, double a) const;
+        Vec eig() const;
+        Vec eig(Mat& vecs) const;
+        void qr(Mat& q, Mat& r) const;
+        void qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const;
         Mat trans() const;
         double& operator()(std::size_t i, std::size_t j);
         double operator()(std::size_t i, std::size_t j) const;

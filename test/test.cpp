@@ -18,7 +18,26 @@ int main()
 
     PRINT(a)
     PRINT(a.det())
-    PRINT(1./a.inv().det())
+    PRINT(std::log10(std::abs(a.det() - 1./a.inv().det())))
+
+    paz::Mat vecs;
+    const paz::Mat vals = a.eig(vecs);
+    PRINT(vals);
+    PRINT(vecs);
+
+    PRINT(m.trans())
+    paz::Mat q;
+    paz::Mat r;
+    std::vector<std::size_t> p;
+    m.trans().qr(q, r, p);
+    PRINT(q*r)
+    std::cout << 'p' << std::endl;
+    for(std::size_t i = 0; i < p.size(); ++i)
+    {
+        std::cout << p[i] << (i + 1 < p.size() ? " " : "");
+    }
+    std::cout << std::endl << std::endl;
+
     PRINT(a.chol())
     PRINT(m)
     PRINT(c)
@@ -28,6 +47,7 @@ int main()
     auto aNew = a;
     aNew.setCol(0, paz::Vec::Ones(aNew.rows()));
     PRINT(aNew)
+    PRINT(aNew.eig())
 
     paz::Vec z(aNew.rows()*aNew.cols());
     std::copy(aNew.begin(), aNew.end(), z.begin());
