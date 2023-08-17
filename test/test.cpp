@@ -26,4 +26,10 @@ int main()
     auto aNew = a;
     aNew.setCol(0, paz::Vec::Ones(aNew.rows()));
     PRINT(aNew)
+
+    paz::Vec z(aNew.rows()*aNew.cols());
+    std::copy(aNew.begin(), aNew.end(), z.begin());
+    PRINT(z);
+    z.setHead(2, z.tail(2));
+    PRINT(z)
 }

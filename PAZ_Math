@@ -170,11 +170,11 @@ namespace paz
         Vec(const std::initializer_list<std::initializer_list<double>>& list);
 
         Vec segment(std::size_t start, std::size_t n) const;
-        void setSegment(std::size_t start, std::size_t n, const Vec& rhs) const;
+        void setSegment(std::size_t start, std::size_t n, const Vec& rhs);
         Vec head(std::size_t n) const;
-        void head(std::size_t n, const Vec& rhs) const;
+        void setHead(std::size_t n, const Vec& rhs);
         Vec tail(std::size_t n) const;
-        void tail(std::size_t n, const Vec& rhs) const;
+        void setTail(std::size_t n, const Vec& rhs);
         Vec cross(const Vec& rhs) const;
     };
 

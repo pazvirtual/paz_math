@@ -51,14 +51,29 @@ paz::Vec paz::Vec::segment(std::size_t start, std::size_t n) const
     return block(start, 0, n, 1);
 }
 
+void paz::Vec::setSegment(std::size_t start, std::size_t n, const Vec& rhs)
+{
+    setBlock(start, 0, n, 1, rhs);
+}
+
 paz::Vec paz::Vec::head(std::size_t n) const
 {
     return segment(0, n);
 }
 
+void paz::Vec::setHead(std::size_t n, const Vec& rhs)
+{
+    setSegment(0, n, rhs);
+}
+
 paz::Vec paz::Vec::tail(std::size_t n) const
 {
-    return segment(size() - 1 - n, n);
+    return segment(size() - n, n);
+}
+
+void paz::Vec::setTail(std::size_t n, const Vec& rhs)
+{
+    setSegment(size() - n, n, rhs);
 }
 
 paz::Vec paz::Vec::cross(const Vec& rhs) const
