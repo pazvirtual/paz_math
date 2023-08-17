@@ -78,6 +78,24 @@ paz::Mat::Mat(const std::initializer_list<std::initializer_list<double>>& list)
     }
 }
 
+paz::Mat::operator Vec&()
+{
+    if(!empty() && cols() != 1)
+    {
+        throw std::runtime_error("Not a vector or empty matrix.");
+    }
+    return *this;
+}
+
+paz::Mat::operator const Vec&() const
+{
+    if(!empty() && cols() != 1)
+    {
+        throw std::runtime_error("Not a vector or empty matrix.");
+    }
+    return *this;
+}
+
 paz::Mat paz::Mat::inv() const
 {
     if(rows() != cols())
@@ -232,6 +250,21 @@ std::size_t paz::Mat::rows() const
 std::size_t paz::Mat::cols() const
 {
     return _vals.size() ? _vals.size()/_rows : 0;
+}
+
+double paz::Mat::normSq() const
+{
+    return dot(*this);
+}
+
+double paz::Mat::norm() const
+{
+    return std::sqrt(normSq());
+}
+
+paz::Mat paz::Mat::normalized() const
+{
+    return (*this)/norm();
 }
 
 paz::Mat& paz::Mat::operator*=(const Mat& rhs)
@@ -406,27 +439,4 @@ std::ostream& paz::operator<<(std::ostream& out, const Mat& rhs)
         out << (i + 1 < rhs.rows() ? "\n" : "");
     }
     return out;
-}
-
-paz::Vec paz::Vec::IdQuat()
-{
-    return {{0., 0., 0., 1.}};
-}
-
-paz::Vec::Vec() {}
-
-paz::Vec::Vec(std::size_t rows) : Mat(rows, 1) {}
-
-paz::Vec::Vec(const std::initializer_list<std::initializer_list<double>>& list)
-{
-    if(!list.size())
-    {
-        return;
-    }
-    if(list.size() != 1)
-    {
-        throw std::runtime_error("Vector initializer list is malformed.");
-    }
-    *this = Vec(list.begin()->size());
-    std::copy(list.begin()->begin(), list.begin()->end(), begin());
 }

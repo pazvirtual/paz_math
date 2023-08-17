@@ -30,7 +30,8 @@ namespace paz
         Mat(std::size_t side);
         Mat(const Vec& v);
         Mat(const std::initializer_list<std::initializer_list<double>>& list);
-
+        operator Vec&();
+        operator const Vec&() const;
         Mat inv() const;
         Mat solve(const Mat& b) const; // x : (*this)*x = b
         Mat chol() const;
@@ -61,6 +62,9 @@ namespace paz
         {
             return _vals.end();
         }
+        double normSq() const;
+        double norm() const;
+        Mat normalized() const;
         Mat& operator*=(const Mat& rhs);
         Mat operator*(const Mat& rhs) const;
         Mat& operator+=(const Mat& rhs);
@@ -87,15 +91,26 @@ namespace paz
     class Vec : public Mat
     {
     public:
+        static Vec Constant(std::size_t rows, double c);
+        static Vec Zero(std::size_t rows);
+        static Vec Ones(std::size_t rows);
         static Vec IdQuat();
 
         Vec();
         Vec(std::size_t rows);
         Vec(const std::initializer_list<std::initializer_list<double>>& list);
+        Vec cross(const Vec& rhs) const;
+        BlockRef head(std::size_t n);
+        Vec head(std::size_t n) const;
+        BlockRef tail(std::size_t n);
+        Vec tail(std::size_t n) const;
     };
 
     Mat to_mat(const Vec& q);
     Vec to_quat(const Mat& m);
+    Vec qinv(const Vec& q);
+    Mat xi(const Vec& q);
+    Vec qmult(const Vec& p, const Vec& q);
 
     class BlockRef
     {

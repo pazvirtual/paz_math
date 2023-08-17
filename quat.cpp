@@ -2,6 +2,10 @@
 
 paz::Mat paz::to_mat(const Vec& q)
 {
+    if(q.size() != 4)
+    {
+        throw std::runtime_error("Not a quaternion.");
+    }
     const auto xx = q(0)*q(0);
     const auto yy = q(1)*q(1);
     const auto zz = q(2)*q(2);
@@ -18,11 +22,14 @@ paz::Mat paz::to_mat(const Vec& q)
 
 paz::Vec paz::to_quat(const Mat& m)
 {
+    if(m.rows() != 3 || m.cols() != 3)
+    {
+        throw std::runtime_error("Not a rotation matrix.");
+    }
     const auto fourXSquaredMinus1 = m(0, 0) - m(1, 1) - m(2, 2);
     const auto fourYSquaredMinus1 = m(1, 1) - m(0, 0) - m(2, 2);
     const auto fourZSquaredMinus1 = m(2, 2) - m(0, 0) - m(1, 1);
     const auto fourWSquaredMinus1 = m(0, 0) + m(1, 1) + m(2, 2);
-
     int biggestIndex = 0;
     auto fourBiggestSquaredMinus1 = fourWSquaredMinus1;
     if(fourXSquaredMinus1 > fourBiggestSquaredMinus1)
@@ -40,10 +47,8 @@ paz::Vec paz::to_quat(const Mat& m)
         fourBiggestSquaredMinus1 = fourZSquaredMinus1;
         biggestIndex = 3;
     }
-
     const auto biggestVal = sqrt(fourBiggestSquaredMinus1 + 1.)*0.5;
     const auto mult = 0.25/biggestVal;
-
     switch(biggestIndex)
     {
         case 0:
@@ -67,4 +72,33 @@ paz::Vec paz::to_quat(const Mat& m)
                     {              biggestVal},
                     {(m(0, 1) - m(1, 0))*mult}};
     }
+}
+
+paz::Vec paz::qinv(const Vec& q)
+{
+    if(q.size() != 4)
+    {
+        throw std::runtime_error("Not a quaternion.");
+    }
+    return {{-q(0), -q(1), -q(2), q(3)}};
+}
+
+paz::Mat paz::xi(const Vec& q)
+{
+    if(q.size() != 4)
+    {
+        throw std::runtime_error("Not a quaternion.");
+    }
+    return {{ q(3), -q(2),  q(1)},
+            { q(2),  q(3), -q(0)},
+            {-q(1),  q(0),  q(3)},
+            {-q(0), -q(1), -q(2)}};
+}
+
+paz::Vec paz::qmult(const Vec& p, const Vec& q)
+{
+    const Vec pVec = p.head(3);
+    const Vec qVec = q.head(3);
+    const Vec rVec = q(3)*pVec + p(3)*qVec - pVec.cross(qVec);
+    return {{rVec(0), rVec(1), rVec(2), p(3)*q(3) - pVec.dot(qVec)}};
 }
