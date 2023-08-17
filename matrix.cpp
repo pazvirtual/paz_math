@@ -1,7 +1,6 @@
 #include "PAZ_Math"
 #define eigen_assert(X) { if(!(X)) throw std::runtime_error(#X); }
 #include "Eigen"
-#include <cmath>
 
 paz::Mat paz::Mat::Constant(std::size_t rows, std::size_t cols, double c)
 {
@@ -48,11 +47,36 @@ paz::Mat paz::Mat::Identity(std::size_t side)
     return m;
 }
 
-paz::Mat::Mat(std::size_t rows, std::size_t cols) : _vals(rows*cols), _rows(rows) {}
+paz::Mat::Mat() : _rows(0) {}
+
+paz::Mat::Mat(std::size_t rows, std::size_t cols) : _vals(rows*cols), _rows(
+    rows) {}
 
 paz::Mat::Mat(std::size_t side) : Mat(side, side) {}
 
 paz::Mat::Mat(const Vec& v) : _vals(v._vals), _rows(v._rows) {}
+
+paz::Mat::Mat(const std::initializer_list<std::initializer_list<double>>& list)
+    : _rows(list.size())
+{
+    if(!_rows)
+    {
+        return;
+    }
+    const std::size_t cols = *list.begin()->begin();
+    _vals.resize(_rows*cols);
+    for(std::size_t i = 0; i < _rows; ++i)
+    {
+        if((list.begin() + i)->size() != cols)
+        {
+            throw std::runtime_error("Matrix initializer list is malformed.");
+        }
+        for(std::size_t j = 0; j < cols; ++j)
+        {
+            _vals[i + _rows*j] = *((list.begin() + i)->begin() + j);
+         }
+    }
+}
 
 paz::Mat paz::Mat::inv() const
 {
@@ -386,47 +410,23 @@ std::ostream& paz::operator<<(std::ostream& out, const Mat& rhs)
 
 paz::Vec paz::Vec::IdQuat()
 {
-    paz::Vec q(4);
-    q(0) = 0.;
-    q(1) = 0.;
-    q(2) = 0.;
-    q(3) = 1.;
-    return q;
+    return {{0., 0., 0., 1.}};
 }
+
+paz::Vec::Vec() {}
 
 paz::Vec::Vec(std::size_t rows) : Mat(rows, 1) {}
 
-paz::BlockRef::BlockRef(Mat& mat, std::size_t startRow, std::size_t startCol,
-    std::size_t numRows, std::size_t numCols) : _baseData(mat.data()),
-    _baseRows(mat.rows()), _startRow(startRow), _startCol(startCol), _rows(
-    numRows), _cols(numCols) {}
-
-paz::BlockRef::operator Mat() const
+paz::Vec::Vec(const std::initializer_list<std::initializer_list<double>>& list)
 {
-    paz::Mat res(_rows, _cols);
-    for(std::size_t i = 0; i < _rows; ++i)
+    if(!list.size())
     {
-        for(std::size_t j = 0; j < _cols; ++j)
-        {
-            res(i, j) = *(_baseData + _startRow + i + _baseRows*(_startCol +
-                j));
-        }
+        return;
     }
-    return res;
-}
-
-paz::BlockRef& paz::BlockRef::operator=(const paz::Mat& rhs)
-{
-    if(_rows != rhs.rows() || _cols != rhs.cols())
+    if(list.size() != 1)
     {
-        throw std::runtime_error("Matrix dimensions do not match.");
+        throw std::runtime_error("Vector initializer list is malformed.");
     }
-    for(std::size_t i = 0; i < _rows; ++i)
-    {
-        for(std::size_t j = 0; j < _cols; ++j)
-        {
-            *(_baseData + i + _baseRows*j) = rhs(i, j);
-        }
-    }
-    return *this;
+    *this = Vec(list.begin()->size());
+    std::copy(list.begin()->begin(), list.begin()->end(), begin());
 }

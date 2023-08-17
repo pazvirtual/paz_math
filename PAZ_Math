@@ -25,9 +25,11 @@ namespace paz
         static Mat Ones(std::size_t side);
         static Mat Identity(std::size_t side);
 
+        Mat();
         Mat(std::size_t rows, std::size_t cols);
         Mat(std::size_t side);
         Mat(const Vec& v);
+        Mat(const std::initializer_list<std::initializer_list<double>>& list);
 
         Mat inv() const;
         Mat solve(const Mat& b) const; // x : (*this)*x = b
@@ -87,8 +89,13 @@ namespace paz
     public:
         static Vec IdQuat();
 
+        Vec();
         Vec(std::size_t rows);
+        Vec(const std::initializer_list<std::initializer_list<double>>& list);
     };
+
+    Mat to_mat(const Vec& q);
+    Vec to_quat(const Mat& m);
 
     class BlockRef
     {
