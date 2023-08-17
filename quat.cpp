@@ -52,25 +52,25 @@ paz::Vec paz::to_quat(const Mat& m)
     switch(biggestIndex)
     {
         case 0:
-            return {{(m(1, 2) - m(2, 1))*mult},
-                    {(m(2, 0) - m(0, 2))*mult},
-                    {(m(0, 1) - m(1, 0))*mult},
-                    {              biggestVal}};
+            return {{(m(1, 2) - m(2, 1))*mult,
+                     (m(2, 0) - m(0, 2))*mult,
+                     (m(0, 1) - m(1, 0))*mult,
+                                   biggestVal}};
         case 1:
-            return {{              biggestVal},
-                    {(m(0, 1) + m(1, 0))*mult},
-                    {(m(2, 0) + m(0, 2))*mult},
-                    {(m(1, 2) - m(2, 1))*mult}};
+            return {{              biggestVal,
+                     (m(0, 1) + m(1, 0))*mult,
+                     (m(2, 0) + m(0, 2))*mult,
+                     (m(1, 2) - m(2, 1))*mult}};
         case 2:
-            return {{(m(0, 1) + m(1, 0))*mult},
-                    {              biggestVal},
-                    {(m(1, 2) + m(2, 1))*mult},
-                    {(m(2, 0) - m(0, 2))*mult}};
+            return {{(m(0, 1) + m(1, 0))*mult,
+                                   biggestVal,
+                     (m(1, 2) + m(2, 1))*mult,
+                     (m(2, 0) - m(0, 2))*mult}};
         default:
-            return {{(m(2, 0) + m(0, 2))*mult},
-                    {(m(1, 2) + m(2, 1))*mult},
-                    {              biggestVal},
-                    {(m(0, 1) - m(1, 0))*mult}};
+            return {{(m(2, 0) + m(0, 2))*mult,
+                     (m(1, 2) + m(2, 1))*mult,
+                                   biggestVal,
+                     (m(0, 1) - m(1, 0))*mult}};
     }
 }
 
