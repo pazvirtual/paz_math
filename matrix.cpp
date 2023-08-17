@@ -48,6 +48,16 @@ paz::Mat paz::Mat::Identity(std::size_t side)
     return m;
 }
 
+paz::Mat paz::Mat::Diag(const Vec& vals)
+{
+    Mat m = Mat::Zero(vals.size());
+    for(std::size_t i = 0; i < vals.size(); ++i)
+    {
+        m._vals[i + m._rows*i] = vals._vals[i];
+    }
+    return m;
+}
+
 paz::Mat::Mat(std::size_t rows, std::size_t cols) : _vals(rows*cols), _rows(
     rows) {}
 
@@ -360,6 +370,20 @@ paz::Mat paz::Mat::trans() const
         {
             res._vals[j + res._rows*i] = _vals[i + _rows*j];
         }
+    }
+    return res;
+}
+
+paz::Vec paz::Mat::diag() const
+{
+    if(rows() != cols() || empty())
+    {
+        throw std::runtime_error("Matrix must be square.");
+    }
+    paz::Vec res(_rows);
+    for(std::size_t i = 0; i < _rows; ++i)
+    {
+        res(i) = _vals[i + _rows*i];
     }
     return res;
 }
