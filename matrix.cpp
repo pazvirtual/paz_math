@@ -185,7 +185,11 @@ paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const
 
 paz::Mat paz::Mat::trans() const
 {
-    if(_rows == 1)
+    if(empty())
+    {
+        return *this;
+    }
+    if(rows() == 1)
     {
         auto res = *this;
         res._rows = res.size();
