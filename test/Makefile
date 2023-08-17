@@ -22,11 +22,6 @@ else
 endif
 INCL := -I..
 LIBS := ../libpazmath.a
-ifeq ($(OSPRETTY), macOS)
-    LIBS += -framework Cocoa
-else
-    LIBS += -lstdc++fs
-endif
 
 SRC := $(wildcard *.cpp)
 EXE := $(SRC:.cpp=)
