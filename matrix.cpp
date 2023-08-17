@@ -2,6 +2,8 @@
 #define eigen_assert(x){ if(!(x)) throw std::runtime_error(#x); }
 #include "Eigen"
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 paz::Mat paz::Mat::Constant(std::size_t rows, std::size_t cols, double c)
 {
@@ -720,13 +722,36 @@ paz::Mat paz::operator*(double lhs, const Mat& rhs)
 
 std::ostream& paz::operator<<(std::ostream& out, const Mat& rhs)
 {
-    for(std::size_t i = 0; i < rhs.rows(); ++i)
+    if(!rhs.empty())
     {
-        for(std::size_t j = 0; j < rhs.cols(); ++j)
+        std::vector<std::string> str;
+        str.reserve(rhs.rows()*rhs.cols());
+        std::size_t maxLen = 0;
+        for(std::size_t i = 0; i < rhs.rows(); ++i)
         {
-            out << rhs(i, j) << (j + 1 < rhs.cols() ? " " : "");
+            for(std::size_t j = 0; j < rhs.cols(); ++j)
+            {
+                std::ostringstream oss;
+                oss << rhs(i, j);
+                str.push_back(oss.str());
+                maxLen = std::max(maxLen, str.back().size());
+            }
         }
-        out << (i + 1 < rhs.rows() ? "\n" : "");
+        for(std::size_t i = 0; i < rhs.rows(); ++i)
+        {
+            for(std::size_t j = 0; j < rhs.cols(); ++j)
+            {
+                out << std::setw(maxLen) << str[rhs.cols()*i + j];
+                if(j + 1 < rhs.cols())
+                {
+                    out << ' ';
+                }
+            }
+            if(i + 1 < rhs.rows())
+            {
+                out << '\n';
+            }
+        }
     }
     return out;
 }
