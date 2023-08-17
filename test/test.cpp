@@ -4,17 +4,17 @@
 
 int main()
 {
-    paz::Mat l(2);
+    auto l = paz::Mat::Zero(2);
     l(0, 0) = paz::randn();
     l(1, 0) = paz::randn();
     l(1, 1) = paz::randn();
-    const paz::Mat a = l*l.trans();
+    const auto a = l*l.trans();
     paz::Mat m(2, 3);
     for(auto& n : m)
     {
         n = 0.01*paz::randn();
     }
-    const double c = paz::randn();
+    const auto c = paz::randn();
 
     PRINT(a)
     PRINT(a.chol())
