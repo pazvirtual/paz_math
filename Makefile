@@ -43,9 +43,8 @@ REINSTALLHEADER := $(shell cmp -s $(PROJNAME) $(INCLPATH)/$(PROJNAME); echo $$?)
 
 print-% : ; @echo $* = $($*)
 
-default: lib$(LIBNAME).a
-	$(MAKE) -C test
-	test/test
+.PHONY: test
+default: lib$(LIBNAME).a test
 
 lib$(LIBNAME).a: $(OBJ)
 	$(RM) lib$(LIBNAME).a
@@ -59,6 +58,10 @@ else
 install: $(PROJNAME) lib$(LIBNAME).a
 	cp lib$(LIBNAME).a $(LIBPATH)/
 endif
+
+test:
+	$(MAKE) -C test
+	test/test
 
 %.o: %.cpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
