@@ -16,11 +16,7 @@ endif
 CXXVER := 17
 OPTIM := 3
 ZIPNAME := $(PROJNAME)-$(OSPRETTY)
-ifeq ($(OSPRETTY), Windows)
-    ZIPCONTENTS := $(PROJNAME) lib$(LIBNAME).a
-else
-    ZIPCONTENTS := $(PROJNAME) lib$(LIBNAME).a
-endif
+ZIPCONTENTS := $(PROJNAME) lib$(LIBNAME).a
 CFLAGS := -O$(OPTIM) -Wall -Wextra -Wno-missing-braces
 ifeq ($(OSPRETTY), macOS)
     CFLAGS += -mmacosx-version-min=10.11 -Wunguarded-availability -Wno-unknown-warning-option
@@ -31,22 +27,44 @@ else
 endif
 #CXXFLAGS := -std=c++$(CXXVER) $(CFLAGS) -Wold-style-cast -IEigen
 CXXFLAGS := -std=c++$(CXXVER) $(CFLAGS) -IEigen
-ifeq ($(OSPRETTY), Windows)
-    CXXFLAGS += -Wno-deprecated-copy
+ifeq ($(OSPRETTY), macOS)
+    CXXFLAGS += -Wno-string-plus-int
+else
+    ifeq ($(OSPRETTY), Windows)
+        CXXFLAGS += -Wno-deprecated-copy
+    endif
 endif
 ARFLAGS := -rcs
 
 SRC := $(wildcard *.cpp)
-OBJ := $(SRC:.cpp=.o)
+ifeq ($(OSPRETTY), macOS)
+    ARMOBJ := $(SRC:.cpp=_arm64.o)
+    INTOBJ := $(SRC:.cpp=_x86_64.o)
+else
+    OBJ := $(SRC:.cpp=.o)
+endif
 
 print-% : ; @echo $* = $($*)
 
 .PHONY: test
 default: test
 
+ifeq ($(OSPRETTY), macOS)
+lib$(LIBNAME).a: lib$(LIBNAME)_arm64.a lib$(LIBNAME)_x86_64.a
+	lipo -create -output $@ $^
+
+lib$(LIBNAME)_arm64.a: $(ARMOBJ)
+	$(RM) $@
+	ar $(ARFLAGS) $@ $^
+
+lib$(LIBNAME)_x86_64.a: $(INTOBJ)
+	$(RM) $@
+	ar $(ARFLAGS) $@ $^
+else
 lib$(LIBNAME).a: $(OBJ)
-	$(RM) lib$(LIBNAME).a
-	ar $(ARFLAGS) lib$(LIBNAME).a $^
+	$(RM) $@
+	ar $(ARFLAGS) $@ $^
+endif
 
 install: $(PROJNAME) lib$(LIBNAME).a
 	cmp -s $(PROJNAME) $(INCLPATH)/$(PROJNAME) || cp $(PROJNAME) $(INCLPATH)/
@@ -56,11 +74,17 @@ test: lib$(LIBNAME).a
 	$(MAKE) -C test
 	test/test
 
+%_arm64.o: %.cpp
+	$(CXX) -arch arm64 -c -o $@ $< $(CXXFLAGS)
+
+%_x86_64.o: %.cpp
+	$(CXX) -arch x86_64 -c -o $@ $< $(CXXFLAGS)
+
 %.o: %.cpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
 
 clean:
-	$(RM) $(OBJ) lib$(LIBNAME).a
+	$(RM) *.o *.a
 	$(MAKE) -C test clean
 
 zip: $(ZIPCONTENTS)
