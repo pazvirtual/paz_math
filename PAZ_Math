@@ -1,0 +1,69 @@
+#ifndef PAZ_MATH
+#define PAZ_MATH
+
+#include <iostream>
+#include <vector>
+
+namespace paz
+{
+    double randn();
+
+    class Mat
+    {
+        std::vector<double> _vals;
+        std::size_t _rows;
+
+    public:
+        static Mat Constant(std::size_t rows, std::size_t cols, double c);
+        static Mat Constant(std::size_t side, double c);
+        static Mat Zero(std::size_t rows, std::size_t cols);
+        static Mat Zero(std::size_t side);
+        static Mat Ones(std::size_t rows, std::size_t cols);
+        static Mat Ones(std::size_t side);
+        static Mat Identity(std::size_t side);
+
+        Mat(std::size_t rows, std::size_t cols);
+        Mat(std::size_t side);
+
+        Mat inv() const;
+        Mat solve(const Mat& b) const; // x : (*this)*x = b
+        Mat chol() const;
+        Mat trans() const;
+        double& operator()(std::size_t i, std::size_t j);
+        double operator()(std::size_t i, std::size_t j) const;
+        std::size_t size() const;
+        std::size_t rows() const;
+        std::size_t cols() const;
+        bool empty() const;
+        auto begin()
+        {
+            return _vals.begin();
+        }
+        auto begin() const
+        {
+            return _vals.begin();
+        }
+        auto end()
+        {
+            return _vals.end();
+        }
+        auto end() const
+        {
+            return _vals.end();
+        }
+        Mat& operator*=(const Mat& rhs);
+        Mat operator*(const Mat& rhs) const;
+        Mat& operator+=(const Mat& rhs);
+        Mat operator+(const Mat& rhs) const;
+        Mat& operator*=(double rhs);
+        Mat operator*(double rhs) const;
+        Mat operator-() const;
+    };
+
+    Mat& operator*=(double lhs, Mat& rhs);
+    Mat operator*(double lhs, const Mat& rhs);
+
+    std::ostream& operator<<(std::ostream& out, const paz::Mat& x);
+}
+
+#endif
