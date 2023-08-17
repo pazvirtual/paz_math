@@ -19,6 +19,11 @@ namespace paz
     double uniform();
     double uniform(double a, double b);
 
+    inline double mix(double a, double b, double k)
+    {
+        return a + k*(b - a);
+    }
+
     inline double fract(const double n)
     {
         return n - std::floor(n);
@@ -143,12 +148,14 @@ namespace paz
         Vec cross(const Vec& rhs) const;
     };
 
+    Mat mix(const Mat& a, const Mat& b, double k);
     Mat to_mat(const Vec& q);
     Vec to_quat(const Mat& m);
     Vec qinv(const Vec& q);
     Mat xi(const Vec& q);
     Vec qmult(const Vec& p, const Vec& q);
     Vec axis_angle(const Vec& axis, double angle);
+    Vec nlerp(const Vec& p, const Vec& q, double k);
 }
 
 #endif

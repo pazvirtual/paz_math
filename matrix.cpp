@@ -755,3 +755,8 @@ std::ostream& paz::operator<<(std::ostream& out, const Mat& rhs)
     }
     return out;
 }
+
+paz::Mat paz::mix(const Mat& a, const Mat& b, double k)
+{
+    return a + k*(b - a);
+}

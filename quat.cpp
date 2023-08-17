@@ -97,6 +97,10 @@ paz::Mat paz::xi(const Vec& q)
 
 paz::Vec paz::qmult(const Vec& p, const Vec& q)
 {
+    if(p.size() != 4 || q.size() != 4)
+    {
+        throw std::runtime_error("Not a quaternion.");
+    }
     const Vec pVec = p.head(3);
     const Vec qVec = q.head(3);
     const Vec rVec = q(3)*pVec + p(3)*qVec - pVec.cross(qVec);
@@ -107,4 +111,17 @@ paz::Vec paz::axis_angle(const Vec& axis, double angle)
 {
     const double s = std::sin(0.5*angle);
     return Vec{{s*axis(0), s*axis(1), s*axis(2), std::cos(0.5*angle)}};
+}
+
+paz::Vec paz::nlerp(const Vec& p, const Vec& q, double k)
+{
+    if(p.size() != 4 || q.size() != 4)
+    {
+        throw std::runtime_error("Not a quaternion.");
+    }
+    if(p.dot(q) < 0.)
+    {
+        return mix(p, -q, k).normalized();
+    }
+    return mix(p, q, k).normalized();
 }
