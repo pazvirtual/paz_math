@@ -1,7 +1,6 @@
 #include "PAZ_Math"
 #define eigen_assert(x){ if(!(x)) throw std::runtime_error(#x); }
 #include "Eigen"
-#include <iostream>
 #include <sstream>
 #include <iomanip>
 
