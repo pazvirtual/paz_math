@@ -49,6 +49,7 @@ namespace paz
         static Mat Ones(std::size_t side);
         static Mat Identity(std::size_t side);
         static Mat Diag(const Vec& vals);
+        static Mat Cross(const Vec& vals);
 
         Mat() = default;
         Mat(std::size_t rows, std::size_t cols);

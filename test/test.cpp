@@ -59,4 +59,7 @@ int main()
     PRINT(z);
     z.setHead(2, z.tail(2));
     PRINT(z)
+
+    PRINT(static_cast<paz::Vec>(m.row(0).trans()).cross(m.row(1).trans()))
+    PRINT(paz::Mat::Cross(m.row(0).trans())*m.row(1).trans())
 }

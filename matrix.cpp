@@ -59,6 +59,17 @@ paz::Mat paz::Mat::Diag(const Vec& vals)
     return m;
 }
 
+paz::Mat paz::Mat::Cross(const Vec& vals)
+{
+    if(vals.size() != 3)
+    {
+        throw std::runtime_error("Not a 3-vector.");
+    }
+    return Mat{{            0., -vals._vals[2],  vals._vals[1]},
+               { vals._vals[2],             0., -vals._vals[0]},
+               {-vals._vals[1],  vals._vals[0],             0.}};
+}
+
 paz::Mat::Mat(std::size_t rows, std::size_t cols) : _vals(rows*cols), _rows(
     rows) {}
 
