@@ -26,50 +26,50 @@ paz::Vec paz::to_quat(const Mat& m)
     {
         throw std::runtime_error("Not a rotation matrix.");
     }
-    const auto fourXSquaredMinus1 = m(0, 0) - m(1, 1) - m(2, 2);
-    const auto fourYSquaredMinus1 = m(1, 1) - m(0, 0) - m(2, 2);
-    const auto fourZSquaredMinus1 = m(2, 2) - m(0, 0) - m(1, 1);
-    const auto fourWSquaredMinus1 = m(0, 0) + m(1, 1) + m(2, 2);
-    int biggestIndex = 0;
-    auto fourBiggestSquaredMinus1 = fourWSquaredMinus1;
-    if(fourXSquaredMinus1 > fourBiggestSquaredMinus1)
+    const auto fourXSqMinus1 = m(0, 0) - m(1, 1) - m(2, 2);
+    const auto fourYSqMinus1 = m(1, 1) - m(0, 0) - m(2, 2);
+    const auto fourZSqMinus1 = m(2, 2) - m(0, 0) - m(1, 1);
+    const auto fourWSqMinus1 = m(0, 0) + m(1, 1) + m(2, 2);
+    auto maxVal = fourWSqMinus1;
+    int maxIdx = 0;
+    if(fourXSqMinus1 > maxVal)
     {
-        fourBiggestSquaredMinus1 = fourXSquaredMinus1;
-        biggestIndex = 1;
+        maxVal = fourXSqMinus1;
+        maxIdx = 1;
     }
-    if(fourYSquaredMinus1 > fourBiggestSquaredMinus1)
+    if(fourYSqMinus1 > maxVal)
     {
-        fourBiggestSquaredMinus1 = fourYSquaredMinus1;
-        biggestIndex = 2;
+        maxVal = fourYSqMinus1;
+        maxIdx = 2;
     }
-    if(fourZSquaredMinus1 > fourBiggestSquaredMinus1)
+    if(fourZSqMinus1 > maxVal)
     {
-        fourBiggestSquaredMinus1 = fourZSquaredMinus1;
-        biggestIndex = 3;
+        maxVal = fourZSqMinus1;
+        maxIdx = 3;
     }
-    const auto biggestVal = sqrt(fourBiggestSquaredMinus1 + 1.)*0.5;
-    const auto mult = 0.25/biggestVal;
-    switch(biggestIndex)
+    maxVal = 0.5*std::sqrt(maxVal + 1.);
+    const auto mult = 0.25/maxVal;
+    switch(maxIdx)
     {
         case 0:
             return {{(m(1, 2) - m(2, 1))*mult,
                      (m(2, 0) - m(0, 2))*mult,
                      (m(0, 1) - m(1, 0))*mult,
-                                   biggestVal}};
+                                       maxVal}};
         case 1:
-            return {{              biggestVal,
+            return {{                  maxVal,
                      (m(0, 1) + m(1, 0))*mult,
                      (m(2, 0) + m(0, 2))*mult,
                      (m(1, 2) - m(2, 1))*mult}};
         case 2:
             return {{(m(0, 1) + m(1, 0))*mult,
-                                   biggestVal,
+                                       maxVal,
                      (m(1, 2) + m(2, 1))*mult,
                      (m(2, 0) - m(0, 2))*mult}};
         default:
             return {{(m(2, 0) + m(0, 2))*mult,
                      (m(1, 2) + m(2, 1))*mult,
-                                   biggestVal,
+                                       maxVal,
                      (m(0, 1) - m(1, 0))*mult}};
     }
 }
