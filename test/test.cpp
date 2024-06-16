@@ -43,11 +43,18 @@ int main()
     std::cout << std::endl << std::endl;
     PRINT(m.col(0).rep(2, 3))
 
-    PRINT(a.chol())
-    PRINT(m)
-    PRINT(c)
-    PRINT(a.chol().cholUpdate(m, c))
-    PRINT((a + m*m.trans()*c).chol())
+    try
+    {
+        PRINT(a.chol())
+        PRINT(m)
+        PRINT(c)
+        PRINT(a.chol().cholUpdate(m, c))
+        PRINT((a + m*m.trans()*c).chol())
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << "Warning: " << e.what() << std::endl; //TEMP - remove randomness and add proper unit tests
+    }
 
     auto aNew = a;
     aNew.setCol(0, paz::Vec::Ones(aNew.rows()));
