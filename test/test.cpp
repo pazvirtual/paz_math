@@ -78,4 +78,6 @@ int main()
     std::cout << x << std::endl << std::endl;
     std::cout << std::setw(10);
     std::cout << x << std::endl << std::endl;
+
+    PRINT(paz::mix(a, aNew, 0.1))
 }

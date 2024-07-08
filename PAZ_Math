@@ -7,6 +7,12 @@
 
 namespace paz
 {
+    template<typename T>
+    using require_integral = std::enable_if_t<std::is_integral<T>::value>;
+
+    template<typename T>
+    using require_not_integral = std::enable_if_t<!std::is_integral<T>::value>;
+
     constexpr double NatBase   = 2.71828182845904523536028747135; // M_E
     constexpr double SqrtTwo   = 1.41421356237309504880168872421; // M_SQRT2
     constexpr double SqrtHalf  = 0.70710678118654752440084436210; // M_SQRT1_2
@@ -19,19 +25,50 @@ namespace paz
     double uniform();
     double uniform(double a, double b);
 
-    inline double mix(double a, double b, double k)
+    template<typename T0, typename T1, typename T2, require_not_integral<T2>* =
+        nullptr>
+    constexpr auto mix(T0 a, T1 b, T2 k)
     {
         return a + k*(b - a);
     }
 
-    inline double fract(const double n)
+    template<typename T>
+    constexpr T clamp(T x, T a, T b)
     {
-        return n - std::floor(n);
+        return std::max(a, std::min(b, x));
     }
 
-    inline double normalize_angle(const double n)
+    template<typename T, require_integral<T>* = nullptr>
+    T fract(T /* x */)
     {
-        return fract(n/TwoPi)*TwoPi;
+        return 0;
+    }
+    template<typename T, require_not_integral<T>* = nullptr>
+    T fract(T x)
+    {
+        return x - std::floor(x);
+    }
+
+    template<typename T, require_not_integral<T>* = nullptr>
+    T normalize_angle(T x)
+    {
+        return fract(x/TwoPi)*TwoPi;
+    }
+
+    constexpr double inf()
+    {
+        return std::numeric_limits<double>::infinity();
+    }
+
+    constexpr double eps()
+    {
+        return std::numeric_limits<double>::epsilon();
+    }
+
+    inline double eps(double x)
+    {
+        const double x0 = std::abs(x);
+        return std::nextafter(x0, std::numeric_limits<double>::max()) - x0;
     }
 
     class Vec;
@@ -149,7 +186,6 @@ namespace paz
         Vec cross(const Vec& rhs) const;
     };
 
-    Mat mix(const Mat& a, const Mat& b, double k);
     Mat to_mat(const Vec& q);
     Vec to_quat(const Mat& m);
     Vec qinv(const Vec& q);
