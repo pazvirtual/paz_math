@@ -1,5 +1,6 @@
 #include "PAZ_Math"
 #include <iostream>
+#include <iomanip>
 
 #define PRINT(x) std::cout << #x << std::endl << x << std::endl << std::endl;
 
@@ -69,4 +70,12 @@ int main()
 
     PRINT(static_cast<paz::Vec>(m.row(0).trans()).cross(m.row(1).trans()))
     PRINT(paz::Mat::Cross(m.row(0).trans())*m.row(1).trans())
+
+    const paz::Mat x = paz::Mat::Cross(m.row(0).trans())*m.row(1).trans();
+    std::cout << std::fixed;
+    std::cout << x << std::endl << std::endl;
+    std::cout << std::setprecision(4);
+    std::cout << x << std::endl << std::endl;
+    std::cout << std::setw(10);
+    std::cout << x << std::endl << std::endl;
 }

@@ -749,10 +749,16 @@ std::ostream& paz::operator<<(std::ostream& out, const Mat& rhs)
             for(std::size_t j = 0; j < rhs.cols(); ++j)
             {
                 std::ostringstream oss;
+                oss.flags(out.flags());
+                oss.precision(out.precision());
                 oss << rhs(i, j);
                 str.push_back(oss.str());
                 maxLen = std::max(maxLen, str.back().size());
             }
+        }
+        if(out.width())
+        {
+            maxLen = out.width();
         }
         for(std::size_t i = 0; i < rhs.rows(); ++i)
         {
