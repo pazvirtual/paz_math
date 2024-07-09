@@ -125,11 +125,11 @@ paz::Mat paz::Mat::Randn(std::size_t side)
 }
 
 paz::Mat::Mat(std::size_t rows, std::size_t cols) : _vals(rows*cols), _rows(
-    rows) {}
+    rows), _cols(cols) {}
 
 paz::Mat::Mat(std::size_t side) : Mat(side, side) {}
 
-paz::Mat::Mat(const Vec& v) : _vals(v._vals), _rows(v._rows) {}
+paz::Mat::Mat(const Vec& v) : _vals(v._vals), _rows(v._rows), _cols(v._cols) {}
 
 paz::Mat::Mat(const std::initializer_list<std::initializer_list<double>>& list)
     : _rows(list.size())
@@ -138,15 +138,15 @@ paz::Mat::Mat(const std::initializer_list<std::initializer_list<double>>& list)
     {
         return;
     }
-    const std::size_t cols = list.begin()->size();
-    _vals.resize(_rows*cols);
+    _cols = list.begin()->size();
+    _vals.resize(_rows*_cols);
     for(std::size_t i = 0; i < _rows; ++i)
     {
-        if((list.begin() + i)->size() != cols)
+        if((list.begin() + i)->size() != _cols)
         {
             throw std::runtime_error("Matrix initializer list is malformed.");
         }
-        for(std::size_t j = 0; j < cols; ++j)
+        for(std::size_t j = 0; j < _cols; ++j)
         {
             _vals[i + _rows*j] = *((list.begin() + i)->begin() + j);
         }
@@ -428,12 +428,14 @@ paz::Mat paz::Mat::trans() const
     {
         auto res = *this;
         res._rows = res.size();
+        res._cols = 1;
         return res;
     }
     if(cols() == 1)
     {
         auto res = *this;
         res._rows = 1;
+        res._cols = res.size();
         return res;
     }
     Mat res(cols(), rows());
@@ -537,12 +539,12 @@ std::size_t paz::Mat::size() const
 
 std::size_t paz::Mat::rows() const
 {
-    return _vals.size() ? _rows : 0;
+    return _rows;
 }
 
 std::size_t paz::Mat::cols() const
 {
-    return _vals.size() ? _vals.size()/_rows : 0;
+    return _cols;
 }
 
 double paz::Mat::normSq() const
@@ -823,31 +825,27 @@ void paz::Mat::setCol(std::size_t n, const Mat& rhs)
 
 void paz::Mat::resize(std::size_t newRows, std::size_t newCols)
 {
-    if(!newRows || !newCols)
-    {
-        throw std::runtime_error("Cannot resize to zero.");
-    }
     resizeRows(newRows);
     resizeCols(newCols);
 }
 
 void paz::Mat::resizeRows(std::size_t newRows)
 {
-    if(!newRows)
+    if(newRows == _rows)
     {
-        throw std::runtime_error("Cannot resize to zero.");
+        return;
     }
     if(empty())
     {
-        _vals.resize(newRows*cols());
+        _vals.resize(newRows*_cols);
     }
     else
     {
-        std::vector<double> newVals(newRows*cols());
+        std::vector<double> newVals(newRows*_cols);
         const std::size_t copyRows = std::min(newRows, _rows);
-        for(std::size_t i = 0; i < cols(); ++i)
+        for(std::size_t i = 0; i < _cols; ++i)
         {
-            std::copy(begin() + copyRows*i, begin() + copyRows*(i + 1), newVals.
+            std::copy(begin() + _rows*i, begin() + _rows*i + copyRows, newVals.
                 begin() + newRows*i);
         }
         std::swap(newVals, _vals);
@@ -857,11 +855,12 @@ void paz::Mat::resizeRows(std::size_t newRows)
 
 void paz::Mat::resizeCols(std::size_t newCols)
 {
-    if(!newCols)
+    if(newCols == _cols)
     {
-        throw std::runtime_error("Cannot resize to zero.");
+        return;
     }
     _vals.resize(_rows*newCols);
+    _cols = newCols;
 }
 
 bool paz::Mat::hasNan() const

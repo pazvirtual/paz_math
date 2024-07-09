@@ -100,6 +100,7 @@ namespace paz
     {
         std::vector<double> _vals;
         std::size_t _rows = 0;
+        std::size_t _cols = 0;
 
     public:
         static Mat Constant(std::size_t rows, std::size_t cols, double c);
