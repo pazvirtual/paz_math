@@ -868,6 +868,22 @@ bool paz::Mat::hasNan() const
     return false;
 }
 
+void paz::Mat::shuffleCols()
+{
+    if(!rows() || cols() < 2)
+    {
+        return;
+    }
+    const auto seq = rand_seq(cols());
+    std::vector<double> newVals(rows()*cols());
+    for(std::size_t i = 0; i < cols(); ++i)
+    {
+        std::copy(begin() + _rows*i, begin() + _rows*(i + 1), newVals.begin() +
+            _rows*seq[i]);
+    }
+    swap(newVals, _vals);
+}
+
 paz::Mat& paz::operator*=(double lhs, Mat& rhs)
 {
     return rhs *= lhs;

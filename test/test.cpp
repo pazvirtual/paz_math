@@ -113,4 +113,7 @@ int main()
 
     PRINT(paz::Mat::Hcat(m34, m32))
     PRINT(paz::Mat::Vcat(m43, m23))
+
+    m34.shuffleCols();
+    PRINT(m34)
 }

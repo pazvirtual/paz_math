@@ -67,6 +67,14 @@ std::size_t paz::pmf_rand(const std::vector<double>& probs)
     throw std::runtime_error(oss.str());
 }
 
+std::vector<std::size_t> paz::rand_seq(std::size_t length)
+{
+    std::vector<std::size_t> indices(length);
+    std::iota(indices.begin(), indices.end(), std::size_t{0});
+    std::shuffle(indices.begin(), indices.end(), random_engine());
+    return indices;
+}
+
 void paz::normalize_log_weights(std::vector<double>& logWeights)
 {
     const double maxLogWeight = *std::max_element(logWeights.begin(),

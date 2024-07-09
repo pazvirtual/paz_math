@@ -28,6 +28,7 @@ namespace paz
     double uniform();
     double uniform(double a, double b);
     std::size_t pmf_rand(const std::vector<double>& probs);
+    std::vector<std::size_t> rand_seq(std::size_t length);
 
     // log(w) -> w
     void normalize_log_weights(std::vector<double>& logWeights);
@@ -186,6 +187,7 @@ namespace paz
         void resizeRows(std::size_t newRows);
         void resizeCols(std::size_t newCols);
         bool hasNan() const;
+        void shuffleCols();
     };
 
     Mat& operator*=(double lhs, Mat& rhs);
