@@ -76,6 +76,11 @@ void paz::Vec::setTail(std::size_t n, const Vec& rhs)
     setSegment(size() - n, n, rhs);
 }
 
+void paz::Vec::resize(std::size_t newRows)
+{
+    resizeRows(newRows);
+}
+
 paz::Vec paz::Vec::cross(const Vec& rhs) const
 {
     if(size() != 3 || rhs.size() != 3)

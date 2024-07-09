@@ -4,6 +4,8 @@
 #include <cmath>
 #include <vector>
 #include <ostream>
+#include <numeric>
+#include <algorithm>
 
 namespace paz
 {
@@ -20,13 +22,19 @@ namespace paz
     constexpr double Pi        = 3.14159265358979323846264338328; // M_PI
     constexpr double TwoPi     = 6.28318530717958647692528676656; // 2.*M_PI
 
+    std::size_t random_seed();
     double randn();
     int randi(int a, int b);
     double uniform();
     double uniform(double a, double b);
+    std::size_t pmf_rand(const std::vector<double>& probs);
 
-    template<typename T0, typename T1, typename T2, require_not_integral<T2>* =
-        nullptr>
+    // log(w) -> w
+    void normalize_log_weights(std::vector<double>& logWeights);
+    // w -> w
+    void normalize_weights(std::vector<double>& weights);
+
+    template<typename T0, typename T1, typename T2>
     constexpr auto mix(T0 a, T1 b, T2 k)
     {
         return a + k*(b - a);
@@ -39,7 +47,7 @@ namespace paz
     }
 
     template<typename T, require_integral<T>* = nullptr>
-    T fract(T /* x */)
+    constexpr T fract(T /* x */)
     {
         return 0;
     }
@@ -55,20 +63,28 @@ namespace paz
         return fract(x/TwoPi)*TwoPi;
     }
 
-    constexpr double inf()
+    template<typename T = double, require_not_integral<T>* = nullptr>
+    constexpr T inf()
     {
-        return std::numeric_limits<double>::infinity();
+        return std::numeric_limits<T>::infinity();
     }
 
-    constexpr double eps()
+    template<typename T = double, require_not_integral<T>* = nullptr>
+    constexpr T eps()
     {
-        return std::numeric_limits<double>::epsilon();
+        return std::numeric_limits<T>::epsilon();
     }
 
-    inline double eps(double x)
+    template<typename T = double, require_not_integral<T>* = nullptr>
+    inline T eps(T x)
     {
-        const double x0 = std::abs(x);
-        return std::nextafter(x0, std::numeric_limits<double>::max()) - x0;
+        const T x0 = std::abs(x);
+        return std::nextafter(x0, inf<T>()) - x0;
+    }
+
+    inline double nan()
+    {
+        return std::nan("");
     }
 
     class Vec;
@@ -87,6 +103,8 @@ namespace paz
         static Mat Identity(std::size_t side);
         static Mat Diag(const Vec& vals);
         static Mat Cross(const Vec& vals);
+        static Mat Hcat(const Mat& a, const Mat& b);
+        static Mat Vcat(const Mat& a, const Mat& b);
 
         Mat() = default;
         Mat(std::size_t rows, std::size_t cols);
@@ -134,6 +152,11 @@ namespace paz
         }
         double normSq() const;
         double norm() const;
+        double sum() const;
+        Vec rowSum() const;
+        Mat colSum() const;
+        double min() const;
+        double max() const;
         Mat normalized() const;
         Mat prod(const Mat& rhs) const; // elementwise
         Mat quot(const Mat& rhs) const; // elementwise
@@ -157,6 +180,10 @@ namespace paz
         void setRow(std::size_t m, const Mat& rhs);
         Mat col(std::size_t n) const;
         void setCol(std::size_t n, const Mat& rhs);
+        void resize(std::size_t newRows, std::size_t newCols);
+        void resizeRows(std::size_t newRows);
+        void resizeCols(std::size_t newCols);
+        bool hasNan() const;
     };
 
     Mat& operator*=(double lhs, Mat& rhs);
@@ -183,6 +210,7 @@ namespace paz
         void setHead(std::size_t n, const Vec& rhs);
         Vec tail(std::size_t n) const;
         void setTail(std::size_t n, const Vec& rhs);
+        void resize(std::size_t newRows);
         Vec cross(const Vec& rhs) const;
     };
 
@@ -193,6 +221,34 @@ namespace paz
     Vec qmult(const Vec& p, const Vec& q);
     Vec axis_angle(const Vec& axis, double angle);
     Vec nlerp(const Vec& p, const Vec& q, double k);
+
+    template<typename T>
+    bool any_true(const T& v)
+    {
+        return std::any_of(v.begin(), v.end(), [](bool x){ return x; });
+    }
+
+    template<typename T>
+    bool all_true(const T& v)
+    {
+        return std::all_of(v.begin(), v.end(), [](bool x){ return x; });
+    }
+
+    template<typename T>
+    bool none_true(const T& v)
+    {
+        return std::none_of(v.begin(), v.end(), [](bool x){ return x; });
+    }
+
+    template<typename T>
+    std::size_t num_true(const T& v)
+    {
+        return std::accumulate(v.begin(), v.end(), std::size_t{0});
+    }
+
+    double gaussian_pdf(const Vec& mean, const Mat& cholCov, const Vec& x);
+    double cs_divergence(const Vec& meanA, const Mat& cholCovA, const Vec&
+        meanB, const Mat& cholCovB);
 }
 
 #endif

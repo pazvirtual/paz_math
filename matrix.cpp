@@ -70,6 +70,37 @@ paz::Mat paz::Mat::Cross(const Vec& vals)
                {-vals._vals[1],  vals._vals[0],             0.}};
 }
 
+paz::Mat paz::Mat::Hcat(const Mat& a, const Mat& b)
+{
+    if(a.rows() != b.rows())
+    {
+        throw std::runtime_error("Matrix dimensions do not match.");
+    }
+    paz::Mat res(a.rows(), a.cols() + b.cols());
+    std::copy(a.begin(), a.end(), res.begin());
+    std::copy(b.begin(), b.end(), res.begin() + a.size());
+    return res;
+}
+
+paz::Mat paz::Mat::Vcat(const Mat& a, const Mat& b)
+{
+    const std::size_t cols = a.cols();
+    if(cols != b.cols())
+    {
+        throw std::runtime_error("Matrix dimensions do not match.");
+    }
+    const std::size_t rows = a.rows() + b.rows();
+    paz::Mat res(rows, cols);
+    for(std::size_t i = 0; i < cols; ++i)
+    {
+        std::copy(a.begin() + a.rows()*i, a.begin() + a.rows()*(i + 1), res.
+            begin() + rows*i);
+        std::copy(b.begin() + b.rows()*i, b.begin() + b.rows()*(i + 1), res.
+            begin() + rows*i + a.rows());
+    }
+    return res;
+}
+
 paz::Mat::Mat(std::size_t rows, std::size_t cols) : _vals(rows*cols), _rows(
     rows) {}
 
@@ -412,8 +443,7 @@ paz::Mat paz::Mat::rep(std::size_t m, std::size_t n) const
     paz::Mat res(m*rows(), n*cols());
     for(std::size_t i = 0; i < m*n; ++i)
     {
-        std::copy(_vals.begin(), _vals.end(), res._vals.begin() + rows()*cols()*
-            i);
+        std::copy(begin(), end(), res.begin() + rows()*cols()*i);
     }
     return res;
 }
@@ -502,6 +532,47 @@ double paz::Mat::norm() const
     return std::sqrt(normSq());
 }
 
+double paz::Mat::sum() const
+{
+    return std::accumulate(begin(), end(), 0.);
+}
+
+paz::Vec paz::Mat::rowSum() const
+{
+    Vec res = Vec::Zero(rows());
+    for(std::size_t i = 0; i < rows(); ++i)
+    {
+        for(std::size_t j = 0; j < cols(); ++j)
+        {
+            res(i) += _vals[i + _rows*j];
+        }
+    }
+    return res;
+}
+
+paz::Mat paz::Mat::colSum() const
+{
+    Mat res = Mat::Zero(1, cols());
+    for(std::size_t i = 0; i < cols(); ++i)
+    {
+        for(std::size_t j = 0; j < rows(); ++j)
+        {
+            res(0, i) += _vals[j + _rows*i];
+        }
+    }
+    return res;
+}
+
+double paz::Mat::min() const
+{
+    return *std::min_element(begin(), end());
+}
+
+double paz::Mat::max() const
+{
+    return *std::max_element(begin(), end());
+}
+
 paz::Mat paz::Mat::normalized() const
 {
     return (*this)/norm();
@@ -547,7 +618,7 @@ paz::Mat paz::Mat::operator*(const Mat& rhs) const
         throw std::runtime_error("Matrix dimensions do not match.");
     }
     Mat res(rows(), rhs.cols());
-    std::fill(res._vals.begin(), res._vals.end(), 0.);
+    std::fill(res.begin(), res.end(), 0.);
     for(std::size_t i = 0; i < rows(); ++i)
     {
         for(std::size_t j = 0; j < cols(); ++j)
@@ -725,6 +796,53 @@ void paz::Mat::setCol(std::size_t n, const Mat& rhs)
     {
         _vals[i + _rows*n] = rhs._vals[i];
     }
+}
+
+void paz::Mat::resize(std::size_t newRows, std::size_t newCols)
+{
+    if(!newRows || !newCols)
+    {
+      throw std::runtime_error("Cannot resize to zero.");
+    }
+    resizeRows(newRows);
+    resizeCols(newCols);
+}
+
+void paz::Mat::resizeRows(std::size_t newRows)
+{
+    if(!newRows)
+    {
+        throw std::runtime_error("Cannot resize to zero.");
+    }
+    std::vector<double> newVals(newRows*cols());
+    for(std::size_t i = 0; i < cols(); ++i)
+    {
+        std::copy(begin() + _rows*i, begin() + _rows*(i + 1), newVals.begin() +
+            newRows*i);
+    }
+    std::swap(newVals, _vals);
+    _rows = newRows;
+}
+
+void paz::Mat::resizeCols(std::size_t newCols)
+{
+    if(!newCols)
+    {
+        throw std::runtime_error("Cannot resize to zero.");
+    }
+    _vals.resize(_rows*newCols);
+}
+
+bool paz::Mat::hasNan() const
+{
+    for(auto n : _vals)
+    {
+        if(std::isnan(n))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 paz::Mat& paz::operator*=(double lhs, Mat& rhs)

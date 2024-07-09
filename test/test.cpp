@@ -80,4 +80,41 @@ int main()
     std::cout << x << std::endl << std::endl;
 
     PRINT(paz::mix(a, aNew, 0.1))
+
+    paz::Mat m33 = paz::Mat(3, 3);
+    for(auto& n : m33)
+    {
+        n = paz::randn();
+    }
+    PRINT(m33)
+    auto m34 = m33;
+    m34.resizeCols(4);
+    PRINT(m34)
+    auto m43 = m33;
+    m43.resizeRows(4);
+    PRINT(m43)
+    auto m44 = m33;
+    m44.resize(4, 4);
+    PRINT(m44)
+    auto m32 = m33;
+    m32.resizeCols(2);
+    PRINT(m32)
+    auto m23 = m33;
+    m23.resizeRows(2);
+    PRINT(m23)
+    auto m22 = m33;
+    m22.resize(2, 2);
+    PRINT(m22)
+
+    const paz::Vec v3 = m33.col(0);
+    PRINT(v3);
+    auto v4 = v3;
+    v4.resize(4);
+    PRINT(v4);
+    auto v2 = v3;
+    v2.resize(2);
+    PRINT(v2);
+
+    PRINT(paz::Mat::Hcat(m34, m32))
+    PRINT(paz::Mat::Vcat(m43, m23))
 }
