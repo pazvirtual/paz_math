@@ -159,8 +159,7 @@ double paz::Mat::det() const
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Eigen::MatrixXd m(rows(), cols());
-    std::copy(begin(), end(), m.data());
+    Eigen::Map<const Eigen::MatrixXd> m(_vals.data(), rows(), cols());
     return m.determinant();
 }
 
@@ -174,11 +173,9 @@ paz::Mat paz::Mat::inv() const
     {
         return *this;
     }
-    Eigen::MatrixXd m(rows(), cols());
-    std::copy(begin(), end(), m.data());
+    Mat res = *this;
+    Eigen::Map<Eigen::MatrixXd> m(res._vals.data(), rows(), cols());
     m = m.inverse().eval();
-    Mat res(rows(), cols());
-    std::copy(m.data(), m.data() + m.size(), res.begin());
     return res;
 }
 
@@ -196,14 +193,13 @@ paz::Mat paz::Mat::solve(const Mat& b) const
     {
         return *this;
     }
-    Eigen::MatrixXd eigenA(rows(), cols());
-    std::copy(begin(), end(), eigenA.data());
-    Eigen::MatrixXd eigenB(b.rows(), b.cols());
-    std::copy(b.begin(), b.end(), eigenB.data());
-    const Eigen::MatrixXd eigenX = eigenA.colPivHouseholderQr().solve(eigenB);
-    Mat res(eigenX.rows(), eigenX.cols());
-    std::copy(eigenX.data(), eigenX.data() + eigenX.size(), res.begin());
-    return res;
+    Eigen::Map<const Eigen::MatrixXd> eigenA(_vals.data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXd> eigenB(b._vals.data(), b.rows(), b.
+        cols());
+    Mat x(b.rows(), b.cols());
+    Eigen::Map<Eigen::MatrixXd> eigenX(x._vals.data(), x.rows(), x.cols());
+    eigenX = eigenA.colPivHouseholderQr().solve(eigenB);
+    return x;
 }
 
 paz::Mat paz::Mat::chol() const
@@ -216,8 +212,7 @@ paz::Mat paz::Mat::chol() const
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Eigen::MatrixXd m(rows(), cols());
-    std::copy(begin(), end(), m.data());
+    Eigen::Map<const Eigen::MatrixXd> m(_vals.data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
@@ -227,9 +222,9 @@ paz::Mat paz::Mat::chol() const
     {
         throw std::runtime_error("Cholesky decomposition failed.");
     }
-    const Eigen::MatrixXd lMat = llt.matrixL();
     Mat res(rows(), cols());
-    std::copy(lMat.data(), lMat.data() + lMat.size(), res.begin());
+    Eigen::Map<Eigen::MatrixXd> lMat(res._vals.data(), rows(), cols());
+    lMat = llt.matrixL();
     return res;
 }
 
@@ -247,10 +242,9 @@ paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const
     {
         throw std::logic_error("Matrices must have the same number of rows.");
     }
-    Eigen::MatrixXd l(rows(), cols());
-    std::copy(begin(), end(), l.data());
-    Eigen::MatrixXd eigenM(m.rows(), m.cols());
-    std::copy(m.begin(), m.end(), eigenM.data());
+    Eigen::Map<const Eigen::MatrixXd> l(_vals.data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXd> eigenM(m._vals.data(), m.rows(), m.
+        cols());
     if(l.hasNaN() || eigenM.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
@@ -272,9 +266,9 @@ paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const
             throw std::runtime_error("Cholesky update failed.");
         }
     }
-    l = llt.matrixL();
     Mat res(rows(), cols());
-    std::copy(l.data(), l.data() + l.size(), res.begin());
+    Eigen::Map<Eigen::MatrixXd> lMat(res._vals.data(), rows(), cols());
+    lMat = llt.matrixL();
     return res;
 }
 
@@ -288,8 +282,7 @@ paz::Vec paz::Mat::eig() const
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Eigen::MatrixXd m(rows(), cols());
-    std::copy(begin(), end(), m.data());
+    Eigen::Map<const Eigen::MatrixXd> m(_vals.data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
@@ -319,8 +312,7 @@ paz::Vec paz::Mat::eig(Mat& vecs) const
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Eigen::MatrixXd m(rows(), cols());
-    std::copy(begin(), end(), m.data());
+    Eigen::Map<const Eigen::MatrixXd> m(_vals.data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
@@ -361,24 +353,18 @@ void paz::Mat::qr(Mat& q, Mat& r) const
         throw std::runtime_error("Matrix must have at least as many rows as col"
             "umns.");
     }
-    Eigen::MatrixXd m(rows(), cols());
-    std::copy(begin(), end(), m.data());
+    Eigen::Map<const Eigen::MatrixXd> m(_vals.data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
     }
     Eigen::HouseholderQR<Eigen::MatrixXd> qr(m);
-    {
-        const Eigen::MatrixXd eigenQ = qr.householderQ();
-        q = Mat(rows(), rows());
-        std::copy(eigenQ.data(), eigenQ.data() + eigenQ.size(), q.begin());
-    }
-    {
-        const Eigen::MatrixXd eigenR = qr.matrixQR().triangularView<Eigen::
-            Upper>();
-        r = Mat(rows(), cols());
-        std::copy(eigenR.data(), eigenR.data() + eigenR.size(), r.begin());
-    }
+    q.resize(rows(), rows());
+    Eigen::Map<Eigen::MatrixXd> eigenQ(q._vals.data(), q.rows(), q.cols());
+    eigenQ = qr.householderQ();
+    r.resize(rows(), cols());
+    Eigen::Map<Eigen::MatrixXd> eigenR(r._vals.data(), r.rows(), r.cols());
+    eigenR = qr.matrixQR().triangularView<Eigen::Upper>();
 }
 
 void paz::Mat::qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const
@@ -395,24 +381,18 @@ void paz::Mat::qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const
         throw std::runtime_error("Matrix must have at least as many rows as col"
             "umns.");
     }
-    Eigen::MatrixXd m(rows(), cols());
-    std::copy(begin(), end(), m.data());
+    Eigen::Map<const Eigen::MatrixXd> m(_vals.data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
     }
     Eigen::ColPivHouseholderQR<Eigen::MatrixXd> qr(m);
-    {
-        const Eigen::MatrixXd eigenQ = qr.householderQ();
-        q = Mat(rows(), rows());
-        std::copy(eigenQ.data(), eigenQ.data() + eigenQ.size(), q.begin());
-    }
-    {
-        const Eigen::MatrixXd eigenR = qr.matrixQR().triangularView<Eigen::
-            Upper>();
-        r = Mat(rows(), cols());
-        std::copy(eigenR.data(), eigenR.data() + eigenR.size(), r.begin());
-    }
+    q.resize(rows(), rows());
+    Eigen::Map<Eigen::MatrixXd> eigenQ(q._vals.data(), q.rows(), q.cols());
+    eigenQ = qr.householderQ();
+    r.resize(rows(), cols());
+    Eigen::Map<Eigen::MatrixXd> eigenR(r._vals.data(), r.rows(), r.cols());
+    eigenR = qr.matrixQR().triangularView<Eigen::Upper>();
     p.resize(cols());
     std::copy(qr.colsPermutation().indices().begin(), qr.colsPermutation().
         indices().end(), p.begin());

@@ -17,7 +17,7 @@ ifeq ($(OSPRETTY), macOS)
     CXXFLAGS += -mmacosx-version-min=$(MINMACOSVER) -Wunguarded-availability -Wno-string-plus-int
 else
     ifeq ($(OSPRETTY), Windows)
-        CXXFLAGS += -Wno-deprecated-copy -static
+        CXXFLAGS += -Wno-deprecated-copy
     endif
 endif
 CXXFLAGS += -I..

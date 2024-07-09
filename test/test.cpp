@@ -16,7 +16,9 @@ int main()
 
     PRINT(a)
     PRINT(a.det())
-    PRINT(std::log10(std::abs(a.det() - 1./a.inv().det())))
+
+    PRINT(a.inv())
+    PRINT(a.inv().det())
 
     PRINT(a.diag())
     PRINT(paz::Mat::Diag(a.diag()))
