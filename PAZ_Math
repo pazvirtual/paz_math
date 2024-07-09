@@ -10,6 +10,11 @@
 namespace paz
 {
     template<typename T>
+    using require_iterable = std::enable_if_t<std::is_same<decltype(std::begin(
+        std::declval<const T&>())), decltype(std::end(std::declval<const
+        T&>()))>::value>;
+
+    template<typename T>
     using require_integral = std::enable_if_t<std::is_integral<T>::value>;
 
     template<typename T>
@@ -239,28 +244,29 @@ namespace paz
     Vec axis_angle(const Vec& axis, double angle);
     Vec nlerp(const Vec& p, const Vec& q, double k);
 
-    template<typename T>
+    template<typename T, require_iterable<T>* = nullptr>
     bool any_true(const T& v)
     {
-        return std::any_of(v.begin(), v.end(), [](bool x){ return x; });
+        return std::any_of(std::begin(v), std::end(v), [](bool x){ return x; });
     }
 
-    template<typename T>
+    template<typename T, require_iterable<T>* = nullptr>
     bool all_true(const T& v)
     {
-        return std::all_of(v.begin(), v.end(), [](bool x){ return x; });
+        return std::all_of(std::begin(v), std::end(v), [](bool x){ return x; });
     }
 
-    template<typename T>
+    template<typename T, require_iterable<T>* = nullptr>
     bool none_true(const T& v)
     {
-        return std::none_of(v.begin(), v.end(), [](bool x){ return x; });
+        return std::none_of(std::begin(v), std::end(v), [](bool x){ return x;
+            });
     }
 
-    template<typename T>
+    template<typename T, require_iterable<T>* = nullptr>
     std::size_t num_true(const T& v)
     {
-        return std::accumulate(v.begin(), v.end(), std::size_t{0});
+        return std::accumulate(std::begin(v), std::end(v), std::size_t{0});
     }
 
     double gaussian_pdf(const Vec& mean, const Mat& cholCov, const Vec& x);
