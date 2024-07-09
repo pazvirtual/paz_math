@@ -791,7 +791,7 @@ void paz::Mat::setBlock(std::size_t startRow, std::size_t startCol, std::
 
 paz::Mat paz::Mat::row(std::size_t m) const
 {
-    return block(m, 0, 1, cols());
+    return block(m, 0, 1, _cols);
 }
 
 void paz::Mat::setRow(std::size_t m, const Mat& rhs)
@@ -800,7 +800,7 @@ void paz::Mat::setRow(std::size_t m, const Mat& rhs)
     {
         throw std::runtime_error("Matrix dimensions do not match.");
     }
-    for(std::size_t i = 0; i < _rows; ++i)
+    for(std::size_t i = 0; i < _cols; ++i)
     {
         _vals[m + _rows*i] = rhs._vals[i];
     }
@@ -808,7 +808,7 @@ void paz::Mat::setRow(std::size_t m, const Mat& rhs)
 
 paz::Mat paz::Mat::col(std::size_t n) const
 {
-    return block(0, n, rows(), 1);
+    return block(0, n, _rows, 1);
 }
 
 void paz::Mat::setCol(std::size_t n, const Mat& rhs)
