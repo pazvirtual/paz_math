@@ -32,6 +32,14 @@ paz::Vec paz::Vec::Randn(std::size_t rows)
     return v;
 }
 
+paz::Vec paz::Vec::Cat(const Vec& a, const Vec& b)
+{
+    Vec v(a.size() + b.size());
+    std::copy(a.begin(), a.end(), v.begin());
+    std::copy(b.begin(), b.end(), v.begin() + a.size());
+    return v;
+}
+
 paz::Vec::Vec(std::size_t rows) : Mat(rows, 1) {}
 
 paz::Vec::Vec(const Mat& m) : Mat(m)

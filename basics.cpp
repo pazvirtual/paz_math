@@ -23,9 +23,13 @@ double paz::randn()
     return dis(random_engine());
 }
 
-int paz::randi(int a, int b)
+std::size_t paz::randi(std::size_t n)
 {
-    std::uniform_int_distribution<int> dis(a, b);
+    if(!n)
+    {
+        return 0;
+    }
+    std::uniform_int_distribution<std::size_t> dis(0, n);
     return dis(random_engine());
 }
 
@@ -73,6 +77,12 @@ std::vector<std::size_t> paz::rand_seq(std::size_t length)
     std::iota(indices.begin(), indices.end(), std::size_t{0});
     std::shuffle(indices.begin(), indices.end(), random_engine());
     return indices;
+}
+
+std::size_t paz::poissrnd(double lambda)
+{
+    std::poisson_distribution<std::size_t> dis(lambda);
+    return dis(random_engine());
 }
 
 void paz::normalize_log_weights(std::vector<double>& logWeights)

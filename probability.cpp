@@ -31,3 +31,10 @@ double paz::cs_divergence(const Vec& meanA, const Mat& cholCovA, const Vec&
     return -std::log(gaussian_pdf(meanB, cholCov, meanA)) - 0.25*std::log(p2*
         covA.det()) - 0.25*std::log(p2*covB.det());
 }
+
+paz::Vec paz::gmm_rand(const std::vector<double>& weights, const std::vector<
+    Vec>& means, const std::vector<Mat>& cholCovs)
+{
+    const std::size_t idx = pmf_rand(weights);
+    return cholCovs[idx]*Vec::Randn(means[idx].size()) + means[idx];
+}

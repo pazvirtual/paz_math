@@ -24,11 +24,12 @@ namespace paz
 
     std::size_t random_seed();
     double randn();
-    int randi(int a, int b);
+    std::size_t randi(std::size_t n);
     double uniform();
     double uniform(double a, double b);
     std::size_t pmf_rand(const std::vector<double>& probs);
     std::vector<std::size_t> rand_seq(std::size_t length);
+    std::size_t poissrnd(double lambda);
 
     // log(w) -> w
     void normalize_log_weights(std::vector<double>& logWeights);
@@ -56,6 +57,12 @@ namespace paz
     T fract(T x)
     {
         return x - std::floor(x);
+    }
+
+    template<typename T>
+    constexpr T sign(T x)
+    {
+        return (T{0} < x) - (x < T{0});
     }
 
     template<typename T, require_not_integral<T>* = nullptr>
@@ -103,6 +110,7 @@ namespace paz
         static Mat Ones(std::size_t side);
         static Mat Identity(std::size_t side);
         static Mat Diag(const Vec& vals);
+        static Mat BlockDiag(const Mat& a, const Mat& b);
         static Mat Cross(const Vec& vals);
         static Mat Hcat(const Mat& a, const Mat& b);
         static Mat Vcat(const Mat& a, const Mat& b);
@@ -203,6 +211,7 @@ namespace paz
         static Vec Ones(std::size_t rows);
         static Vec IdQuat();
         static Vec Randn(std::size_t rows);
+        static Vec Cat(const Vec& a, const Vec& b);
 
         Vec() = default;
         Vec(std::size_t rows);
@@ -254,6 +263,8 @@ namespace paz
     double gaussian_pdf(const Vec& mean, const Mat& cholCov, const Vec& x);
     double cs_divergence(const Vec& meanA, const Mat& cholCovA, const Vec&
         meanB, const Mat& cholCovB);
+    Vec gmm_rand(const std::vector<double>& weights, const std::vector<Vec>&
+        means, const std::vector<Mat>& cholCovs);
 }
 
 #endif

@@ -59,6 +59,14 @@ paz::Mat paz::Mat::Diag(const Vec& vals)
     return m;
 }
 
+paz::Mat paz::Mat::BlockDiag(const Mat& a, const Mat& b)
+{
+    Mat m = Mat::Zero(a.rows() + b.rows(), a.cols() + b.cols());
+    m.setBlock(0, 0, a.rows(), a.cols(), a);
+    m.setBlock(a.rows(), a.cols(), b.rows(), b.cols(), b);
+    return m;
+}
+
 paz::Mat paz::Mat::Cross(const Vec& vals)
 {
     if(vals.size() != 3)
