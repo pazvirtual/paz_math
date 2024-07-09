@@ -105,6 +105,8 @@ namespace paz
         static Mat Cross(const Vec& vals);
         static Mat Hcat(const Mat& a, const Mat& b);
         static Mat Vcat(const Mat& a, const Mat& b);
+        static Mat Randn(std::size_t rows, std::size_t cols);
+        static Mat Randn(std::size_t side);
 
         Mat() = default;
         Mat(std::size_t rows, std::size_t cols);
@@ -198,6 +200,7 @@ namespace paz
         static Vec Zero(std::size_t rows);
         static Vec Ones(std::size_t rows);
         static Vec IdQuat();
+        static Vec Randn(std::size_t rows);
 
         Vec() = default;
         Vec(std::size_t rows);

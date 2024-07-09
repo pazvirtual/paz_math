@@ -76,7 +76,7 @@ paz::Mat paz::Mat::Hcat(const Mat& a, const Mat& b)
     {
         throw std::runtime_error("Matrix dimensions do not match.");
     }
-    paz::Mat res(a.rows(), a.cols() + b.cols());
+    Mat res(a.rows(), a.cols() + b.cols());
     std::copy(a.begin(), a.end(), res.begin());
     std::copy(b.begin(), b.end(), res.begin() + a.size());
     return res;
@@ -90,7 +90,7 @@ paz::Mat paz::Mat::Vcat(const Mat& a, const Mat& b)
         throw std::runtime_error("Matrix dimensions do not match.");
     }
     const std::size_t rows = a.rows() + b.rows();
-    paz::Mat res(rows, cols);
+    Mat res(rows, cols);
     for(std::size_t i = 0; i < cols; ++i)
     {
         std::copy(a.begin() + a.rows()*i, a.begin() + a.rows()*(i + 1), res.
@@ -99,6 +99,21 @@ paz::Mat paz::Mat::Vcat(const Mat& a, const Mat& b)
             begin() + rows*i + a.rows());
     }
     return res;
+}
+
+paz::Mat paz::Mat::Randn(std::size_t rows, std::size_t cols)
+{
+    Mat m(rows, cols);
+    for(auto& n : m)
+    {
+        n = randn();
+    }
+    return m;
+}
+
+paz::Mat paz::Mat::Randn(std::size_t side)
+{
+    return Mat::Randn(side, side);
 }
 
 paz::Mat::Mat(std::size_t rows, std::size_t cols) : _vals(rows*cols), _rows(
@@ -802,7 +817,7 @@ void paz::Mat::resize(std::size_t newRows, std::size_t newCols)
 {
     if(!newRows || !newCols)
     {
-      throw std::runtime_error("Cannot resize to zero.");
+        throw std::runtime_error("Cannot resize to zero.");
     }
     resizeRows(newRows);
     resizeCols(newCols);
@@ -814,13 +829,21 @@ void paz::Mat::resizeRows(std::size_t newRows)
     {
         throw std::runtime_error("Cannot resize to zero.");
     }
-    std::vector<double> newVals(newRows*cols());
-    for(std::size_t i = 0; i < cols(); ++i)
+    if(empty())
     {
-        std::copy(begin() + _rows*i, begin() + _rows*(i + 1), newVals.begin() +
-            newRows*i);
+        _vals.resize(newRows*cols());
     }
-    std::swap(newVals, _vals);
+    else
+    {
+        std::vector<double> newVals(newRows*cols());
+        const std::size_t copyRows = std::min(newRows, _rows);
+        for(std::size_t i = 0; i < cols(); ++i)
+        {
+            std::copy(begin() + copyRows*i, begin() + copyRows*(i + 1), newVals.
+                begin() + newRows*i);
+        }
+        std::swap(newVals, _vals);
+    }
     _rows = newRows;
 }
 

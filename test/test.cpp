@@ -11,11 +11,7 @@ int main()
     l(1, 0) = paz::randn();
     l(1, 1) = paz::randn();
     const auto a = l*l.trans();
-    paz::Mat m(2, 3);
-    for(auto& n : m)
-    {
-        n = 0.01*paz::randn();
-    }
+    const paz::Mat m = 0.01*paz::Mat::Randn(2, 3);
     const auto c = paz::randn();
 
     PRINT(a)
