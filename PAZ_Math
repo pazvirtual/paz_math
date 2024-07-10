@@ -103,8 +103,11 @@ namespace paz
     }
 
     class Vec;
+    class MatRef;
     class Mat
     {
+        friend class MatRef;
+
         std::vector<double> _vals;
         std::size_t _rows = 0;
         std::size_t _cols = 0;
@@ -117,11 +120,11 @@ namespace paz
         static Mat Ones(std::size_t rows, std::size_t cols);
         static Mat Ones(std::size_t side);
         static Mat Identity(std::size_t side);
-        static Mat Diag(const Vec& vals);
-        static Mat BlockDiag(const Mat& a, const Mat& b);
-        static Mat Cross(const Vec& vals);
-        static Mat Hcat(const Mat& a, const Mat& b);
-        static Mat Vcat(const Mat& a, const Mat& b);
+        static Mat Diag(const MatRef& vals);
+        static Mat BlockDiag(const MatRef& a, const MatRef& b);
+        static Mat Cross(const MatRef& vals);
+        static Mat Hcat(const MatRef& a, const MatRef& b);
+        static Mat Vcat(const MatRef& a, const MatRef& b);
         static Mat Randn(std::size_t rows, std::size_t cols);
         static Mat Randn(std::size_t side);
 
@@ -129,6 +132,7 @@ namespace paz
         Mat(std::size_t rows, std::size_t cols);
         Mat(std::size_t side);
         Mat(const Vec& v);
+        Mat(const MatRef& m);
         Mat(const std::initializer_list<std::initializer_list<double>>& list);
 
         double det() const;
@@ -177,28 +181,28 @@ namespace paz
         double min() const;
         double max() const;
         Mat normalized() const;
-        Mat prod(const Mat& rhs) const; // elementwise
-        Mat quot(const Mat& rhs) const; // elementwise
-        Mat& operator*=(const Mat& rhs);
-        Mat operator*(const Mat& rhs) const;
-        Mat& operator+=(const Mat& rhs);
-        Mat operator+(const Mat& rhs) const;
-        Mat& operator-=(const Mat& rhs);
-        Mat operator-(const Mat& rhs) const;
+        Mat prod(const MatRef& rhs) const; // elementwise
+        Mat quot(const MatRef& rhs) const; // elementwise
+        Mat& operator*=(const MatRef& rhs);
+        Mat operator*(const MatRef& rhs) const;
+        Mat& operator+=(const MatRef& rhs);
+        Mat operator+(const MatRef& rhs) const;
+        Mat& operator-=(const MatRef& rhs);
+        Mat operator-(const MatRef& rhs) const;
         Mat& operator*=(double rhs);
         Mat operator*(double rhs) const;
         Mat& operator/=(double rhs);
         Mat operator/(double rhs) const;
         Mat operator-() const;
-        double dot(const Mat& rhs) const;
-        Mat block(std::size_t startRow, std::size_t startCol, std::size_t
+        double dot(const MatRef& rhs) const;
+        MatRef block(std::size_t startRow, std::size_t startCol, std::size_t
             numRows, std::size_t numCols) const;
         void setBlock(std::size_t startRow, std::size_t startCol, std::size_t
-            numRows, std::size_t numCols, const Mat& rhs);
-        Mat row(std::size_t m) const;
-        void setRow(std::size_t m, const Mat& rhs);
-        Mat col(std::size_t n) const;
-        void setCol(std::size_t n, const Mat& rhs);
+            numRows, std::size_t numCols, const MatRef& rhs);
+        MatRef row(std::size_t m) const;
+        void setRow(std::size_t m, const MatRef& rhs);
+        MatRef col(std::size_t n) const;
+        void setCol(std::size_t n, const MatRef& rhs);
         void resize(std::size_t newRows, std::size_t newCols);
         void resizeRows(std::size_t newRows);
         void resizeCols(std::size_t newCols);
@@ -206,10 +210,9 @@ namespace paz
         void shuffleCols();
     };
 
-    Mat& operator*=(double lhs, Mat& rhs);
-    Mat operator*(double lhs, const Mat& rhs);
+    Mat operator*(double lhs, const MatRef& rhs);
 
-    std::ostream& operator<<(std::ostream& out, const paz::Mat& x);
+    std::ostream& operator<<(std::ostream& out, const MatRef& x);
 
     class Vec : public Mat
     {
@@ -219,22 +222,119 @@ namespace paz
         static Vec Ones(std::size_t rows);
         static Vec IdQuat();
         static Vec Randn(std::size_t rows);
-        static Vec Cat(const Vec& a, const Vec& b);
+        static Vec Cat(const MatRef& a, const MatRef& b);
 
         Vec() = default;
         Vec(std::size_t rows);
         Vec(const Mat& m);
+        Vec(const MatRef& m);
         Vec(const std::initializer_list<std::initializer_list<double>>& list);
 
-        Vec segment(std::size_t start, std::size_t n) const;
-        void setSegment(std::size_t start, std::size_t n, const Vec& rhs);
-        Vec head(std::size_t n) const;
+        MatRef segment(std::size_t start, std::size_t n) const;
+        void setSegment(std::size_t start, std::size_t n, const MatRef& rhs);
+        MatRef head(std::size_t n) const;
         void setHead(std::size_t n, const Vec& rhs);
-        Vec tail(std::size_t n) const;
+        MatRef tail(std::size_t n) const;
         void setTail(std::size_t n, const Vec& rhs);
         void resize(std::size_t newRows);
         Vec cross(const Vec& rhs) const;
     };
+
+    class MatRef
+    {
+        friend class Mat;
+
+    public:
+        struct Iterator
+        {
+            using value_type = double;
+            using difference_type = std::ptrdiff_t;
+            using reference = const double&;
+            using pointer = const double*;
+            using iterator_category = std::random_access_iterator_tag;
+
+            pointer ptr;
+            difference_type row;
+            std::size_t origRows;
+            std::size_t blockRows;
+
+            Iterator& operator--();
+            Iterator operator--(int);
+            Iterator& operator++();
+            Iterator operator++(int);
+            Iterator& operator-=(difference_type n);
+            Iterator& operator+=(difference_type n);
+            Iterator operator-(difference_type n) const;
+            Iterator operator+(difference_type n) const;
+            difference_type operator-(const Iterator& it) const;
+            reference operator*() const;
+            reference operator[](difference_type n) const;
+            bool operator==(const Iterator& it) const;
+            bool operator!=(const Iterator& it) const;
+            bool operator<=(const Iterator& it) const;
+            bool operator>=(const Iterator& it) const;
+            bool operator<(const Iterator& it) const;
+            bool operator>(const Iterator& it) const;
+        };
+
+    private:
+        Iterator _begin;
+        std::size_t _origCols;
+        std::size_t _blockCols;
+
+        MatRef(const Mat& m, std::size_t startRow, std::size_t startCol, std::
+            size_t numRows, std::size_t numCols);
+
+    public:
+        MatRef(const Mat& m);
+
+        // All `const` methods of `paz::Mat` except `paz::Mat::data`.
+        double det() const;
+        Mat inv() const;
+        Mat solve(const Mat& b) const; // x : (*this)*x = b
+        Mat chol() const;
+        Mat cholUpdate(const Mat& m, double a) const;
+        Vec eig() const;
+        Vec eig(Mat& vecs) const;
+        void qr(Mat& q, Mat& r) const;
+        void qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const;
+        Mat trans() const;
+        Vec diag() const;
+        Mat rep(std::size_t m, std::size_t n) const;
+        double operator()(std::size_t i, std::size_t j) const;
+        double operator()(std::size_t i) const;
+        std::size_t size() const;
+        std::size_t rows() const;
+        std::size_t cols() const;
+        bool empty() const;
+        const Iterator& begin() const;
+        Iterator end() const;
+        double normSq() const;
+        double norm() const;
+        double sum() const;
+        Vec rowSum() const;
+        Mat colSum() const;
+        double min() const;
+        double max() const;
+        Mat normalized() const;
+        Mat prod(const MatRef& rhs) const; // elementwise
+        Mat quot(const MatRef& rhs) const; // elementwise
+        Mat operator*(const MatRef& rhs) const;
+        Mat operator+(const MatRef& rhs) const;
+        Mat operator-(const MatRef& rhs) const;
+        Mat operator*(double rhs) const;
+        Mat operator/(double rhs) const;
+        Mat operator-() const;
+        double dot(const MatRef& rhs) const;
+        MatRef block(std::size_t startRow, std::size_t startCol, std::size_t
+            numRows, std::size_t numCols) const;
+        MatRef row(std::size_t m) const;
+        MatRef col(std::size_t n) const;
+        bool hasNan() const;
+    };
+
+    MatRef::Iterator operator+(MatRef::Iterator::difference_type n, const
+        MatRef::Iterator& it);
 
     Mat to_mat(const Vec& q);
     Vec to_quat(const Mat& m);

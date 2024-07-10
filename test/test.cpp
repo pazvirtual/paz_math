@@ -118,4 +118,10 @@ int main()
 
     m34.shuffleCols();
     PRINT(m34)
+
+    paz::Mat seq(7, 11);
+    std::iota(seq.begin(), seq.end(), std::size_t{0});
+    std::cout << std::setprecision(0);
+    PRINT(seq)
+    PRINT(seq.block(1, 2, 3, 5));
 }

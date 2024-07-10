@@ -43,23 +43,23 @@ paz::Mat paz::Mat::Identity(std::size_t side)
     {
         for(std::size_t j = 0; j < side; ++j)
         {
-            m._vals[i + m._rows*j] = (i == j);
+            m(i, j) = (i == j);
         }
     }
     return m;
 }
 
-paz::Mat paz::Mat::Diag(const Vec& vals)
+paz::Mat paz::Mat::Diag(const MatRef& vals)
 {
     Mat m = Mat::Zero(vals.size());
     for(std::size_t i = 0; i < vals.size(); ++i)
     {
-        m._vals[i + m._rows*i] = vals._vals[i];
+        m(i, i) = vals(i);
     }
     return m;
 }
 
-paz::Mat paz::Mat::BlockDiag(const Mat& a, const Mat& b)
+paz::Mat paz::Mat::BlockDiag(const MatRef& a, const MatRef& b)
 {
     Mat m = Mat::Zero(a.rows() + b.rows(), a.cols() + b.cols());
     m.setBlock(0, 0, a.rows(), a.cols(), a);
@@ -67,18 +67,18 @@ paz::Mat paz::Mat::BlockDiag(const Mat& a, const Mat& b)
     return m;
 }
 
-paz::Mat paz::Mat::Cross(const Vec& vals)
+paz::Mat paz::Mat::Cross(const MatRef& vals)
 {
-    if(vals.size() != 3)
+    if(vals.rows() != 3 && vals.cols() != 1)
     {
         throw std::runtime_error("Not a 3-vector.");
     }
-    return Mat{{            0., -vals._vals[2],  vals._vals[1]},
-               { vals._vals[2],             0., -vals._vals[0]},
-               {-vals._vals[1],  vals._vals[0],             0.}};
+    return Mat{{      0., -vals(2),  vals(1)},
+               { vals(2),       0., -vals(0)},
+               {-vals(1),  vals(0),       0.}};
 }
 
-paz::Mat paz::Mat::Hcat(const Mat& a, const Mat& b)
+paz::Mat paz::Mat::Hcat(const MatRef& a, const MatRef& b)
 {
     if(a.rows() != b.rows())
     {
@@ -90,7 +90,7 @@ paz::Mat paz::Mat::Hcat(const Mat& a, const Mat& b)
     return res;
 }
 
-paz::Mat paz::Mat::Vcat(const Mat& a, const Mat& b)
+paz::Mat paz::Mat::Vcat(const MatRef& a, const MatRef& b)
 {
     const std::size_t cols = a.cols();
     if(cols != b.cols())
@@ -129,7 +129,12 @@ paz::Mat::Mat(std::size_t rows, std::size_t cols) : _vals(rows*cols), _rows(
 
 paz::Mat::Mat(std::size_t side) : Mat(side, side) {}
 
-paz::Mat::Mat(const Vec& v) : _vals(v._vals), _rows(v._rows), _cols(v._cols) {}
+paz::Mat::Mat(const Vec& v) : _vals(v._vals), _rows(v.rows()), _cols(1) {}
+
+paz::Mat::Mat(const MatRef& m) : Mat(m.rows(), m.cols())
+{
+    std::copy(m.begin(), m.end(), _vals.begin());
+}
 
 paz::Mat::Mat(const std::initializer_list<std::initializer_list<double>>& list)
     : _rows(list.size())
@@ -159,7 +164,7 @@ double paz::Mat::det() const
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Eigen::Map<const Eigen::MatrixXd> m(_vals.data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
     return m.determinant();
 }
 
@@ -174,12 +179,12 @@ paz::Mat paz::Mat::inv() const
         return *this;
     }
     Mat res = *this;
-    Eigen::Map<Eigen::MatrixXd> m(res._vals.data(), rows(), cols());
+    Eigen::Map<Eigen::MatrixXd> m(res.data(), rows(), cols());
     m = m.inverse().eval();
     return res;
 }
 
-paz::Mat paz::Mat::solve(const Mat& b) const
+paz::Mat paz::Mat::solve(const Mat& b) const //TEMP - not `MatRef` to support `Eigen::Map`
 {
     if(rows() != cols())
     {
@@ -193,11 +198,10 @@ paz::Mat paz::Mat::solve(const Mat& b) const
     {
         return *this;
     }
-    Eigen::Map<const Eigen::MatrixXd> eigenA(_vals.data(), rows(), cols());
-    Eigen::Map<const Eigen::MatrixXd> eigenB(b._vals.data(), b.rows(), b.
-        cols());
+    Eigen::Map<const Eigen::MatrixXd> eigenA(data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXd> eigenB(b.data(), b.rows(), b.cols());
     Mat x(b.rows(), b.cols());
-    Eigen::Map<Eigen::MatrixXd> eigenX(x._vals.data(), x.rows(), x.cols());
+    Eigen::Map<Eigen::MatrixXd> eigenX(x.data(), x.rows(), x.cols());
     eigenX = eigenA.colPivHouseholderQr().solve(eigenB);
     return x;
 }
@@ -212,7 +216,7 @@ paz::Mat paz::Mat::chol() const
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Eigen::Map<const Eigen::MatrixXd> m(_vals.data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
@@ -223,12 +227,12 @@ paz::Mat paz::Mat::chol() const
         throw std::runtime_error("Cholesky decomposition failed.");
     }
     Mat res(rows(), cols());
-    Eigen::Map<Eigen::MatrixXd> lMat(res._vals.data(), rows(), cols());
+    Eigen::Map<Eigen::MatrixXd> lMat(res.data(), rows(), cols());
     lMat = llt.matrixL();
     return res;
 }
 
-paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const
+paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const //TEMP - not `MatRef` to support `Eigen::Map`
 {
     if(empty())
     {
@@ -242,9 +246,8 @@ paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const
     {
         throw std::logic_error("Matrices must have the same number of rows.");
     }
-    Eigen::Map<const Eigen::MatrixXd> l(_vals.data(), rows(), cols());
-    Eigen::Map<const Eigen::MatrixXd> eigenM(m._vals.data(), m.rows(), m.
-        cols());
+    Eigen::Map<const Eigen::MatrixXd> l(data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXd> eigenM(m.data(), m.rows(), m.cols());
     if(l.hasNaN() || eigenM.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
@@ -267,7 +270,7 @@ paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const
         }
     }
     Mat res(rows(), cols());
-    Eigen::Map<Eigen::MatrixXd> lMat(res._vals.data(), rows(), cols());
+    Eigen::Map<Eigen::MatrixXd> lMat(res.data(), rows(), cols());
     lMat = llt.matrixL();
     return res;
 }
@@ -282,7 +285,7 @@ paz::Vec paz::Mat::eig() const
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Eigen::Map<const Eigen::MatrixXd> m(_vals.data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
@@ -312,7 +315,7 @@ paz::Vec paz::Mat::eig(Mat& vecs) const
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Eigen::Map<const Eigen::MatrixXd> m(_vals.data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
@@ -340,7 +343,7 @@ paz::Vec paz::Mat::eig(Mat& vecs) const
     return vals;
 }
 
-void paz::Mat::qr(Mat& q, Mat& r) const
+void paz::Mat::qr(Mat& q, Mat& r) const //TEMP - not `MatRef` to support `Eigen::Map`
 {
     if(empty())
     {
@@ -353,21 +356,21 @@ void paz::Mat::qr(Mat& q, Mat& r) const
         throw std::runtime_error("Matrix must have at least as many rows as col"
             "umns.");
     }
-    Eigen::Map<const Eigen::MatrixXd> m(_vals.data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
     }
     Eigen::HouseholderQR<Eigen::MatrixXd> qr(m);
     q.resize(rows(), rows());
-    Eigen::Map<Eigen::MatrixXd> eigenQ(q._vals.data(), q.rows(), q.cols());
+    Eigen::Map<Eigen::MatrixXd> eigenQ(q.data(), q.rows(), q.cols());
     eigenQ = qr.householderQ();
     r.resize(rows(), cols());
-    Eigen::Map<Eigen::MatrixXd> eigenR(r._vals.data(), r.rows(), r.cols());
+    Eigen::Map<Eigen::MatrixXd> eigenR(r.data(), r.rows(), r.cols());
     eigenR = qr.matrixQR().triangularView<Eigen::Upper>();
 }
 
-void paz::Mat::qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const
+void paz::Mat::qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const //TEMP - not `MatRef` to support `Eigen::Map`
 {
     if(empty())
     {
@@ -381,17 +384,17 @@ void paz::Mat::qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const
         throw std::runtime_error("Matrix must have at least as many rows as col"
             "umns.");
     }
-    Eigen::Map<const Eigen::MatrixXd> m(_vals.data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
     }
     Eigen::ColPivHouseholderQR<Eigen::MatrixXd> qr(m);
     q.resize(rows(), rows());
-    Eigen::Map<Eigen::MatrixXd> eigenQ(q._vals.data(), q.rows(), q.cols());
+    Eigen::Map<Eigen::MatrixXd> eigenQ(q.data(), q.rows(), q.cols());
     eigenQ = qr.householderQ();
     r.resize(rows(), cols());
-    Eigen::Map<Eigen::MatrixXd> eigenR(r._vals.data(), r.rows(), r.cols());
+    Eigen::Map<Eigen::MatrixXd> eigenR(r.data(), r.rows(), r.cols());
     eigenR = qr.matrixQR().triangularView<Eigen::Upper>();
     p.resize(cols());
     std::copy(qr.colsPermutation().indices().begin(), qr.colsPermutation().
@@ -435,7 +438,7 @@ paz::Vec paz::Mat::diag() const
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    paz::Vec res(_rows);
+    Vec res(_rows);
     for(std::size_t i = 0; i < _rows; ++i)
     {
         res(i) = _vals[i + _rows*i];
@@ -445,7 +448,7 @@ paz::Vec paz::Mat::diag() const
 
 paz::Mat paz::Mat::rep(std::size_t m, std::size_t n) const
 {
-    paz::Mat res(m*rows(), n*cols());
+    Mat res(m*rows(), n*cols());
     for(std::size_t i = 0; i < m*n; ++i)
     {
         std::copy(begin(), end(), res.begin() + rows()*cols()*i);
@@ -481,7 +484,7 @@ double paz::Mat::operator()(std::size_t i, std::size_t j) const
 
 double& paz::Mat::operator()(std::size_t i)
 {
-    if(i >= _vals.size())
+    if(i >= size())
     {
         throw std::runtime_error("Index is out of range.");
     }
@@ -490,7 +493,7 @@ double& paz::Mat::operator()(std::size_t i)
 
 double paz::Mat::operator()(std::size_t i) const
 {
-    if(i >= _vals.size())
+    if(i >= size())
     {
         throw std::runtime_error("Index is out of range.");
     }
@@ -583,7 +586,7 @@ paz::Mat paz::Mat::normalized() const
     return (*this)/norm();
 }
 
-paz::Mat paz::Mat::prod(const Mat& rhs) const
+paz::Mat paz::Mat::prod(const MatRef& rhs) const
 {
     if(rows() != rhs.rows() || cols() != rhs.cols())
     {
@@ -592,12 +595,12 @@ paz::Mat paz::Mat::prod(const Mat& rhs) const
     auto res = *this;
     for(std::size_t i = 0; i < size(); ++i)
     {
-        res._vals[i] *= rhs._vals[i];
+        res(i) *= rhs(i);
     }
     return res;
 }
 
-paz::Mat paz::Mat::quot(const Mat& rhs) const
+paz::Mat paz::Mat::quot(const MatRef& rhs) const
 {
     if(rows() != rhs.rows() || cols() != rhs.cols())
     {
@@ -606,17 +609,17 @@ paz::Mat paz::Mat::quot(const Mat& rhs) const
     auto res = *this;
     for(std::size_t i = 0; i < size(); ++i)
     {
-        res._vals[i] /= rhs._vals[i];
+        res(i) /= rhs(i);
     }
     return res;
 }
 
-paz::Mat& paz::Mat::operator*=(const Mat& rhs)
+paz::Mat& paz::Mat::operator*=(const MatRef& rhs)
 {
     return *this = (*this)*rhs;
 }
 
-paz::Mat paz::Mat::operator*(const Mat& rhs) const
+paz::Mat paz::Mat::operator*(const MatRef& rhs) const
 {
     if(cols() != rhs.rows())
     {
@@ -637,7 +640,7 @@ paz::Mat paz::Mat::operator*(const Mat& rhs) const
     return res;
 }
 
-paz::Mat& paz::Mat::operator+=(const Mat& rhs)
+paz::Mat& paz::Mat::operator+=(const MatRef& rhs)
 {
     if(rows() != rhs.rows() || cols() != rhs.cols())
     {
@@ -645,18 +648,18 @@ paz::Mat& paz::Mat::operator+=(const Mat& rhs)
     }
     for(std::size_t i = 0; i < size(); ++i)
     {
-        _vals[i] += rhs._vals[i];
+        _vals[i] += rhs(i);
     }
     return *this;
 }
 
-paz::Mat paz::Mat::operator+(const Mat& rhs) const
+paz::Mat paz::Mat::operator+(const MatRef& rhs) const
 {
     auto res = *this;
     return res += rhs;
 }
 
-paz::Mat& paz::Mat::operator-=(const Mat& rhs)
+paz::Mat& paz::Mat::operator-=(const MatRef& rhs)
 {
     if(rows() != rhs.rows() || cols() != rhs.cols())
     {
@@ -664,26 +667,26 @@ paz::Mat& paz::Mat::operator-=(const Mat& rhs)
     }
     for(std::size_t i = 0; i < size(); ++i)
     {
-        _vals[i] -= rhs._vals[i];
+        _vals[i] -= rhs(i);
     }
     return *this;
 }
 
-double paz::Mat::dot(const Mat& rhs) const
+double paz::Mat::dot(const MatRef& rhs) const
 {
-    if(size() != rhs.size())
+    if(rows() != rhs.rows() || cols() != rhs.cols())
     {
-        throw std::runtime_error("Matrices must have the same size.");
+        throw std::runtime_error("Matrices must have the same dimensions.");
     }
     double res = 0.;
     for(std::size_t i = 0; i < size(); ++i)
     {
-        res += _vals[i]*rhs._vals[i];
+        res += _vals[i]*rhs(i);
     }
     return res;
 }
 
-paz::Mat paz::Mat::operator-(const Mat& rhs) const
+paz::Mat paz::Mat::operator-(const MatRef& rhs) const
 {
     auto res = *this;
     return res -= rhs;
@@ -729,27 +732,18 @@ paz::Mat paz::Mat::operator-() const
     return res;
 }
 
-paz::Mat paz::Mat::block(std::size_t startRow, std::size_t startCol, std::
+paz::MatRef paz::Mat::block(std::size_t startRow, std::size_t startCol, std::
     size_t numRows, std::size_t numCols) const
 {
     if(startRow + numRows > rows() || startCol + numCols > cols())
     {
         throw std::runtime_error("Block is out of range.");
     }
-    Mat res(numRows, numCols);
-    for(std::size_t i = 0; i < numRows; ++i)
-    {
-        for(std::size_t j = 0; j < numCols; ++j)
-        {
-            res._vals[i + res._rows*j] = _vals[startRow + i + _rows*(startCol +
-                j)];
-        }
-    }
-    return res;
+    return MatRef(*this, startRow, startCol, numRows, numCols);
 }
 
 void paz::Mat::setBlock(std::size_t startRow, std::size_t startCol, std::
-    size_t numRows, std::size_t numCols, const Mat& rhs)
+    size_t numRows, std::size_t numCols, const MatRef& rhs)
 {
     if(startRow + numRows > rows() || startCol + numCols > cols())
     {
@@ -763,18 +757,17 @@ void paz::Mat::setBlock(std::size_t startRow, std::size_t startCol, std::
     {
         for(std::size_t j = 0; j < numCols; ++j)
         {
-            _vals[startRow + i + _rows*(startCol + j)] = rhs._vals[i + rhs.
-                _rows*j];
+            _vals[startRow + i + _rows*(startCol + j)] = rhs(i, j);
         }
     }
 }
 
-paz::Mat paz::Mat::row(std::size_t m) const
+paz::MatRef paz::Mat::row(std::size_t m) const
 {
     return block(m, 0, 1, _cols);
 }
 
-void paz::Mat::setRow(std::size_t m, const Mat& rhs)
+void paz::Mat::setRow(std::size_t m, const MatRef& rhs)
 {
     if(rhs.rows() != 1 || rhs.cols() != cols())
     {
@@ -782,16 +775,16 @@ void paz::Mat::setRow(std::size_t m, const Mat& rhs)
     }
     for(std::size_t i = 0; i < _cols; ++i)
     {
-        _vals[m + _rows*i] = rhs._vals[i];
+        _vals[m + _rows*i] = rhs(i);
     }
 }
 
-paz::Mat paz::Mat::col(std::size_t n) const
+paz::MatRef paz::Mat::col(std::size_t n) const
 {
     return block(0, n, _rows, 1);
 }
 
-void paz::Mat::setCol(std::size_t n, const Mat& rhs)
+void paz::Mat::setCol(std::size_t n, const MatRef& rhs)
 {
     if(rhs.rows() != rows() || rhs.cols() != 1)
     {
@@ -799,7 +792,7 @@ void paz::Mat::setCol(std::size_t n, const Mat& rhs)
     }
     for(std::size_t i = 0; i < _rows; ++i)
     {
-        _vals[i + _rows*n] = rhs._vals[i];
+        _vals[i + _rows*n] = rhs(i);
     }
 }
 
@@ -871,17 +864,12 @@ void paz::Mat::shuffleCols()
     swap(newVals, _vals);
 }
 
-paz::Mat& paz::operator*=(double lhs, Mat& rhs)
-{
-    return rhs *= lhs;
-}
-
-paz::Mat paz::operator*(double lhs, const Mat& rhs)
+paz::Mat paz::operator*(double lhs, const MatRef& rhs)
 {
     return rhs*lhs;
 }
 
-std::ostream& paz::operator<<(std::ostream& out, const Mat& rhs)
+std::ostream& paz::operator<<(std::ostream& out, const MatRef& rhs)
 {
     if(!rhs.empty())
     {
