@@ -336,6 +336,9 @@ namespace paz
     MatRef::iterator operator+(MatRef::iterator::difference_type n, const
         MatRef::iterator& it);
 
+    bool operator==(const MatRef& a, const MatRef& b);
+    bool operator!=(const MatRef& a, const MatRef& b);
+
     Mat to_mat(const Vec& q);
     Vec to_quat(const Mat& m);
     Vec qinv(const Vec& q);

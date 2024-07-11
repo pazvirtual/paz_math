@@ -458,3 +458,17 @@ bool paz::MatRef::hasNan() const
     }
     return false;
 }
+
+bool paz::operator==(const MatRef& a, const MatRef& b)
+{
+    if(a.rows() != b.rows() || a.cols() != b.cols())
+    {
+        return false;
+    }
+    return std::equal(a.begin(), a.end(), b.begin());
+}
+
+bool paz::operator!=(const MatRef& a, const MatRef& b)
+{
+    return !(a == b);
+}
