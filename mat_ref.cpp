@@ -1,13 +1,12 @@
 #include "PAZ_Math"
 
-paz::MatRef::Iterator& paz::MatRef::Iterator::operator--()
+paz::MatRef::iterator& paz::MatRef::iterator::operator--()
 {
-throw std::logic_error("HERE"); //TEMP
     --row;
     if(row < 0)
     {
-        ptr -= origRows + 1;
         ptr += blockRows;
+        ptr -= origRows + 1;
         row = blockRows - 1;
     }
     else
@@ -17,14 +16,14 @@ throw std::logic_error("HERE"); //TEMP
     return *this;
 }
 
-paz::MatRef::Iterator paz::MatRef::Iterator::operator--(int)
+paz::MatRef::iterator paz::MatRef::iterator::operator--(int)
 {
     auto temp = *this;
     --(*this);
     return temp;
 }
 
-paz::MatRef::Iterator& paz::MatRef::Iterator::operator++()
+paz::MatRef::iterator& paz::MatRef::iterator::operator++()
 {
     ++row;
     if(row == static_cast<difference_type>(blockRows))
@@ -40,103 +39,120 @@ paz::MatRef::Iterator& paz::MatRef::Iterator::operator++()
     return *this;
 }
 
-paz::MatRef::Iterator paz::MatRef::Iterator::operator++(int)
+paz::MatRef::iterator paz::MatRef::iterator::operator++(int)
 {
     auto temp = *this;
     ++(*this);
     return temp;
 }
 
-paz::MatRef::Iterator& paz::MatRef::Iterator::operator-=(difference_type n)
+paz::MatRef::iterator& paz::MatRef::iterator::operator-=(difference_type n)
 {
-throw std::logic_error("HERE"); //TEMP
-    const difference_type deltaCol = (row - n)/blockRows;
-    const difference_type deltaRow = n - blockRows*deltaCol;
-    ptr -= deltaRow + origRows*deltaCol;
-    row -= deltaRow;
-    return *this;
+    return *this += -n;
 }
 
-paz::MatRef::Iterator& paz::MatRef::Iterator::operator+=(difference_type n)
+paz::MatRef::iterator& paz::MatRef::iterator::operator+=(difference_type n)
 {
-    const difference_type deltaCol = (row + n)/blockRows;
-    const difference_type deltaRow = n - blockRows*deltaCol;
+    const difference_type temp = row + n;
+    difference_type deltaCol = temp/blockRows;
+    difference_type deltaRow = n - blockRows*deltaCol;
+    if(temp < 0 && temp%blockRows)
+    {
+        --deltaCol;
+        deltaRow += blockRows;
+    }
     ptr += deltaRow + origRows*deltaCol;
     row += deltaRow;
     return *this;
 }
 
-paz::MatRef::Iterator paz::MatRef::Iterator::operator-(difference_type n) const
+paz::MatRef::iterator paz::MatRef::iterator::operator-(difference_type n) const
 {
     auto temp = *this;
     temp -= n;
     return temp;
 }
 
-paz::MatRef::Iterator paz::MatRef::Iterator::operator+(difference_type n) const
+paz::MatRef::iterator paz::MatRef::iterator::operator+(difference_type n) const
 {
     auto temp = *this;
     temp += n;
     return temp;
 }
 
-paz::MatRef::Iterator::difference_type paz::MatRef::Iterator::operator-(const
-    Iterator& /* it */) const
+paz::MatRef::iterator::difference_type paz::MatRef::iterator::operator-(const
+    iterator& it) const
 {
-throw std::logic_error("HERE"); //TEMP
+    difference_type deltaPtr;
+    if(ptr < it.ptr)
+    {
+        deltaPtr = -static_cast<difference_type>(it.ptr - ptr);
+    }
+    else
+    {
+        deltaPtr = ptr - it.ptr;
+    }
+    difference_type deltaCol = deltaPtr/origRows;
+    if(deltaPtr < 0 && deltaPtr%origRows)
+    {
+        --deltaCol;
+    }
+    const difference_type deltaRow = row - it.row;
+    return deltaRow + blockRows*deltaCol;
 }
 
-paz::MatRef::Iterator::reference paz::MatRef::Iterator::operator*() const
+paz::MatRef::iterator::reference paz::MatRef::iterator::operator*() const
 {
     return *ptr;
 }
 
-paz::MatRef::Iterator::reference paz::MatRef::Iterator::operator[](
+paz::MatRef::iterator::reference paz::MatRef::iterator::operator[](
     difference_type n) const
 {
     return *(*this + n);
 }
 
-bool paz::MatRef::Iterator::operator==(const Iterator& it) const
+bool paz::MatRef::iterator::operator==(const iterator& it) const
 {
     return ptr == it.ptr;
 }
 
-bool paz::MatRef::Iterator::operator!=(const Iterator& it) const
+bool paz::MatRef::iterator::operator!=(const iterator& it) const
 {
     return ptr != it.ptr;
 }
 
-bool paz::MatRef::Iterator::operator<=(const Iterator& it) const
+bool paz::MatRef::iterator::operator<=(const iterator& it) const
 {
     return ptr <= it.ptr;
 }
 
-bool paz::MatRef::Iterator::operator>=(const Iterator& it) const
+bool paz::MatRef::iterator::operator>=(const iterator& it) const
 {
     return ptr >= it.ptr;
 }
 
-bool paz::MatRef::Iterator::operator<(const Iterator& it) const
+bool paz::MatRef::iterator::operator<(const iterator& it) const
 {
     return ptr < it.ptr;
 }
 
-bool paz::MatRef::Iterator::operator>(const Iterator& it) const
+bool paz::MatRef::iterator::operator>(const iterator& it) const
 {
     return ptr > it.ptr;
 }
 
-paz::MatRef::Iterator paz::operator+(MatRef::Iterator::difference_type n, const
-    MatRef::Iterator& it)
+paz::MatRef::iterator paz::operator+(MatRef::iterator::difference_type n, const
+    MatRef::iterator& it)
 {
     return it + n;
 }
 
 paz::MatRef::MatRef(const Mat& m, std::size_t startRow, std::size_t startCol,
     std::size_t numRows, std::size_t numCols) : _begin({m.data() + startRow +
-    m.rows()*startCol, 0, m.rows(), numRows}), _origCols(m.cols()), _blockCols(
-    numCols) {}
+    m.rows()*startCol, 0, static_cast<iterator::difference_type>(m.rows()),
+    static_cast<iterator::difference_type>(numRows)}), _origCols(m.cols()),
+    _blockCols(numCols) {}
 
 paz::MatRef::MatRef(const Mat& m) : MatRef(m, 0, 0, m.rows(), m.cols()) {}
 
@@ -196,10 +212,10 @@ paz::Vec paz::MatRef::diag() const
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Vec res(_begin.blockRows);
-    for(std::size_t i = 0; i < _begin.blockRows; ++i)
+    Vec res(rows());
+    for(std::size_t i = 0; i < rows(); ++i)
     {
-        res(i) = _begin[i + _begin.blockRows*i];
+        res(i) = operator()(i, i);
     }
     return res;
 }
@@ -224,7 +240,7 @@ double paz::MatRef::operator()(std::size_t i, std::size_t j) const
     {
         throw std::runtime_error("Column index out of range.");
     }
-    return _begin[i + _begin.blockRows*j];
+    return _begin[i + rows()*j];
 }
 
 double paz::MatRef::operator()(std::size_t i) const
@@ -238,7 +254,7 @@ double paz::MatRef::operator()(std::size_t i) const
 
 std::size_t paz::MatRef::size() const
 {
-    return _begin.blockRows*_blockCols;
+    return rows()*cols();
 }
 
 std::size_t paz::MatRef::rows() const
@@ -253,15 +269,15 @@ std::size_t paz::MatRef::cols() const
 
 bool paz::MatRef::empty() const
 {
-    return !_begin.blockRows || !_blockCols;
+    return !rows() || !cols();
 }
 
-const paz::MatRef::Iterator& paz::MatRef::begin() const
+const paz::MatRef::iterator& paz::MatRef::begin() const
 {
     return _begin;
 }
 
-paz::MatRef::Iterator paz::MatRef::end() const
+paz::MatRef::iterator paz::MatRef::end() const
 {
     return _begin + size();
 }
@@ -288,7 +304,7 @@ paz::Vec paz::MatRef::rowSum() const
     {
         for(std::size_t j = 0; j < cols(); ++j)
         {
-            res(i) += _begin[i + _begin.blockRows*j];
+            res(i) += operator()(i, j);
         }
     }
     return res;
@@ -301,7 +317,7 @@ paz::Mat paz::MatRef::colSum() const
     {
         for(std::size_t j = 0; j < rows(); ++j)
         {
-            res(0, i) += _begin[j + _begin.blockRows*i];
+            res(0, i) += operator()(j, i);
         }
     }
     return res;
@@ -401,7 +417,7 @@ double paz::MatRef::dot(const MatRef& rhs) const
     double res = 0.;
     for(std::size_t i = 0; i < size(); ++i)
     {
-        res += _begin[i]*rhs(i);
+        res += operator()(i)*rhs(i);
     }
     return res;
 }

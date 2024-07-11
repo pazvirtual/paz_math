@@ -245,7 +245,7 @@ namespace paz
         friend class Mat;
 
     public:
-        struct Iterator
+        struct iterator
         {
             using value_type = double;
             using difference_type = std::ptrdiff_t;
@@ -255,30 +255,30 @@ namespace paz
 
             pointer ptr;
             difference_type row;
-            std::size_t origRows;
-            std::size_t blockRows;
+            difference_type origRows;
+            difference_type blockRows;
 
-            Iterator& operator--();
-            Iterator operator--(int);
-            Iterator& operator++();
-            Iterator operator++(int);
-            Iterator& operator-=(difference_type n);
-            Iterator& operator+=(difference_type n);
-            Iterator operator-(difference_type n) const;
-            Iterator operator+(difference_type n) const;
-            difference_type operator-(const Iterator& it) const;
+            iterator& operator--();
+            iterator operator--(int);
+            iterator& operator++();
+            iterator operator++(int);
+            iterator& operator-=(difference_type n);
+            iterator& operator+=(difference_type n);
+            iterator operator-(difference_type n) const;
+            iterator operator+(difference_type n) const;
+            difference_type operator-(const iterator& it) const;
             reference operator*() const;
             reference operator[](difference_type n) const;
-            bool operator==(const Iterator& it) const;
-            bool operator!=(const Iterator& it) const;
-            bool operator<=(const Iterator& it) const;
-            bool operator>=(const Iterator& it) const;
-            bool operator<(const Iterator& it) const;
-            bool operator>(const Iterator& it) const;
+            bool operator==(const iterator& it) const;
+            bool operator!=(const iterator& it) const;
+            bool operator<=(const iterator& it) const;
+            bool operator>=(const iterator& it) const;
+            bool operator<(const iterator& it) const;
+            bool operator>(const iterator& it) const;
         };
 
     private:
-        Iterator _begin;
+        iterator _begin;
         std::size_t _origCols;
         std::size_t _blockCols;
 
@@ -307,8 +307,8 @@ namespace paz
         std::size_t rows() const;
         std::size_t cols() const;
         bool empty() const;
-        const Iterator& begin() const;
-        Iterator end() const;
+        const iterator& begin() const;
+        iterator end() const;
         double normSq() const;
         double norm() const;
         double sum() const;
@@ -333,8 +333,8 @@ namespace paz
         bool hasNan() const;
     };
 
-    MatRef::Iterator operator+(MatRef::Iterator::difference_type n, const
-        MatRef::Iterator& it);
+    MatRef::iterator operator+(MatRef::iterator::difference_type n, const
+        MatRef::iterator& it);
 
     Mat to_mat(const Vec& q);
     Vec to_quat(const Mat& m);

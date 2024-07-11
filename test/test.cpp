@@ -6,6 +6,15 @@
 
 int main()
 {
+    paz::Mat temp0(7, 11);
+    const auto temp1 = temp0.block(0, 0, 3, 5);
+    auto it = temp1.end();
+    PRINT(std::distance(temp1.begin(), it - 10))
+    PRINT(std::distance(temp1.begin(), it - 6))
+    PRINT(std::distance(temp1.begin(), it + 0))
+    PRINT(std::distance(temp1.begin(), it + 6))
+    PRINT(std::distance(temp1.begin(), it + 10))
+
     auto l = paz::Mat::Zero(2);
     l(0, 0) = paz::randn();
     l(1, 0) = paz::randn();
