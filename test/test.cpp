@@ -133,4 +133,5 @@ int main()
     std::cout << std::setprecision(0);
     PRINT(seq)
     PRINT(seq.block(1, 2, 3, 5));
+    PRINT(seq.block(1, 2, 3, 5).block(1, 1, 2, 4))
 }

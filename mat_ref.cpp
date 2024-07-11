@@ -425,20 +425,26 @@ double paz::MatRef::dot(const MatRef& rhs) const
 paz::MatRef paz::MatRef::block(std::size_t startRow, std::size_t startCol, std::
     size_t numRows, std::size_t numCols) const
 {
-throw std::logic_error("RETURNING TEMP"); //TEMP
-    return Mat(*this).block(startRow, startCol, numRows, numCols);
+    if(startRow + numRows > rows() || startCol + numCols > cols())
+    {
+        throw std::runtime_error("Block is out of range.");
+    }
+    auto res = *this;
+    res._begin.ptr += startRow + _begin.origRows*startCol;
+    res._begin.row = 0;
+    res._begin.blockRows = numRows;
+    res._blockCols = numCols;
+    return res;
 }
 
 paz::MatRef paz::MatRef::row(std::size_t m) const
 {
-throw std::logic_error("RETURNING TEMP"); //TEMP
-    return Mat(*this).row(m);
+    return block(m, 0, 1, cols());
 }
 
 paz::MatRef paz::MatRef::col(std::size_t n) const
 {
-throw std::logic_error("RETURNING TEMP"); //TEMP
-    return Mat(*this).col(n);
+    return block(0, n, rows(), 1);
 }
 
 bool paz::MatRef::hasNan() const
