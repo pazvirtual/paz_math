@@ -195,6 +195,7 @@ namespace paz
         Mat operator/(double rhs) const;
         Mat operator-() const;
         double dot(const MatRef& rhs) const;
+        Vec cross(const MatRef& rhs) const;
         MatRef block(std::size_t startRow, std::size_t startCol, std::size_t
             numRows, std::size_t numCols) const;
         void setBlock(std::size_t startRow, std::size_t startCol, std::size_t
@@ -237,7 +238,6 @@ namespace paz
         MatRef tail(std::size_t n) const;
         void setTail(std::size_t n, const Vec& rhs);
         void resize(std::size_t newRows);
-        Vec cross(const Vec& rhs) const;
     };
 
     class MatRef
@@ -326,6 +326,7 @@ namespace paz
         Mat operator/(double rhs) const;
         Mat operator-() const;
         double dot(const MatRef& rhs) const;
+        Vec cross(const MatRef& rhs) const;
         MatRef block(std::size_t startRow, std::size_t startCol, std::size_t
             numRows, std::size_t numCols) const;
         MatRef row(std::size_t m) const;

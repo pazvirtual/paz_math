@@ -686,6 +686,17 @@ double paz::Mat::dot(const MatRef& rhs) const
     return res;
 }
 
+paz::Vec paz::Mat::cross(const MatRef& rhs) const
+{
+    if(rows() != 3 || cols() != 1 || rhs.rows() != 3 || rhs.cols() != 1)
+    {
+        throw std::runtime_error("Not a 3-vector.");
+    }
+    return {{operator()(1)*rhs(2) - operator()(2)*rhs(1),
+             operator()(2)*rhs(0) - operator()(0)*rhs(2),
+             operator()(0)*rhs(1) - operator()(1)*rhs(0)}};
+}
+
 paz::Mat paz::Mat::operator-(const MatRef& rhs) const
 {
     auto res = *this;

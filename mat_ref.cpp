@@ -422,6 +422,11 @@ double paz::MatRef::dot(const MatRef& rhs) const
     return res;
 }
 
+paz::Vec paz::MatRef::cross(const MatRef& rhs) const
+{
+    return Mat(*this).cross(rhs);
+}
+
 paz::MatRef paz::MatRef::block(std::size_t startRow, std::size_t startCol, std::
     size_t numRows, std::size_t numCols) const
 {

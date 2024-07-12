@@ -110,14 +110,3 @@ void paz::Vec::resize(std::size_t newRows)
 {
     resizeRows(newRows);
 }
-
-paz::Vec paz::Vec::cross(const Vec& rhs) const
-{
-    if(size() != 3 || rhs.size() != 3)
-    {
-        throw std::runtime_error("Not a 3-vector.");
-    }
-    return {{(*this)(1)*rhs(2) - (*this)(2)*rhs(1),
-             (*this)(2)*rhs(0) - (*this)(0)*rhs(2),
-             (*this)(0)*rhs(1) - (*this)(1)*rhs(0)}};
-}
