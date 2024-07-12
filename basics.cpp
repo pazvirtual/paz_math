@@ -109,3 +109,30 @@ void paz::normalize_weights(std::vector<double>& weights)
     }
     normalize_log_weights(weights);
 }
+
+paz::Mat paz::rot1(double angle)
+{
+    const double c = std::cos(angle);
+    const double s = std::sin(angle);
+    return {{1., 0., 0.},
+            {0.,  c,  s},
+            {0., -s,  c}};
+}
+
+paz::Mat paz::rot2(double angle)
+{
+    const double c = std::cos(angle);
+    const double s = std::sin(angle);
+    return {{ c, 0., -s},
+            {0., 1., 0.},
+            { s, 0.,  c}};
+}
+
+paz::Mat paz::rot3(double angle)
+{
+    const double c = std::cos(angle);
+    const double s = std::sin(angle);
+    return {{ c,  s, 0.},
+            {-s,  c, 0.},
+            {0., 0., 1.}};
+}

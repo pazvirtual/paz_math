@@ -379,6 +379,10 @@ namespace paz
         means, const std::vector<Mat>& cholCovs);
 
     double jv(const Mat& costMat, std::vector<std::size_t>& rowSols);
+
+    Mat rot1(double angle);
+    Mat rot2(double angle);
+    Mat rot3(double angle);
 }
 
 #endif
