@@ -263,7 +263,7 @@ double paz::jv(const Mat& costMat, std::vector<std::size_t>& rowSols)
         }
 
     augment:
-        if(last != None) //TEMP - not sure
+        if(last != None)
         {
             for(std::size_t k = 0; k < last; ++k)
             {
