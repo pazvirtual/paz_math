@@ -380,6 +380,8 @@ namespace paz
         means, const std::vector<Mat>& cholCovs);
 
     double jv(const Mat& costMat, std::vector<std::size_t>& rowSols);
+    void murty(const Mat& costMat, std::size_t numBest, std::vector<std::vector<
+        std::size_t>>& assignments, std::vector<double>& costs);
 
     Mat rot1(double angle);
     Mat rot2(double angle);

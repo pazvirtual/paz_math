@@ -1,17 +1,17 @@
 #include "PAZ_Math"
 #include <cstdint>
 
-#define GET_COST(i, j) get_cost(costMat, resolution, intInf, i, j)
+#define GET_COST(i, j) get_cost(costMat, resolution, intInf, i, j, -minCost)
 
 constexpr double MinRes = 1e-9;
 
 // Handle non-square matrices. (1/2)
 static std::int64_t get_cost(const paz::Mat& costMat, double resolution, std::
-    int64_t intInf, std::size_t i, std::size_t j)
+    int64_t intInf, std::size_t i, std::size_t j, double offset)
 {
     if(i < costMat.rows())
     {
-        const double c = costMat(i, j);
+        const double c = costMat(i, j) + offset;
         if(std::isfinite(c))
         {
             return std::round(c/resolution);
@@ -45,17 +45,17 @@ double paz::jv(const Mat& costMat, std::vector<std::size_t>& rowSols)
     }
 
     const double minCost = costMat.min();
-
-    if(minCost < 0.)
+    if(minCost == -paz::inf())
     {
-        throw std::runtime_error("All costs must be non-negative.");
+        throw std::runtime_error("All costs must be greater than negative infin"
+            "ity.");
     }
     if(!std::isfinite(minCost))
     {
         throw std::runtime_error("All costs are infinite.");
     }
 
-    const double maxCost = max_finite_cost(costMat);
+    const double maxCost = max_finite_cost(costMat) - minCost;
 
     const double resolution = std::max(MinRes, paz::eps(maxCost*(rows + 1)));
     const std::int64_t intInf = std::round(maxCost/resolution)*(rows + 1);
@@ -294,5 +294,5 @@ double paz::jv(const Mat& costMat, std::vector<std::size_t>& rowSols)
     {
         return paz::inf();
     }
-    return cost*resolution;
+    return cost*resolution + minCost*rows;
 }
