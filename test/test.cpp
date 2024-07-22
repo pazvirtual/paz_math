@@ -1,8 +1,10 @@
 #include "PAZ_Math"
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 
 #define PRINT(x) std::cout << #x << std::endl << x << std::endl << std::endl;
+#define PRINT2(x) out << #x << std::endl << x << std::endl << std::endl;
 
 int main()
 {
@@ -77,14 +79,17 @@ int main()
 
     PRINT(m.row(0).trans().cross(m.row(1).trans()))
     PRINT(paz::Mat::Cross(m.row(0).trans())*m.row(1).trans())
-
-    const paz::Mat x = paz::Mat::Cross(m.row(0).trans())*m.row(1).trans();
-    std::cout << std::fixed;
-    std::cout << x << std::endl << std::endl;
-    std::cout << std::setprecision(4);
-    std::cout << x << std::endl << std::endl;
-    std::cout << std::setw(10);
-    std::cout << x << std::endl << std::endl;
+    {
+        const paz::Mat x = paz::Mat::Cross(m.row(0).trans())*m.row(1).trans();
+        std::ostringstream out;
+        out << std::fixed;
+        out << x << std::endl << std::endl;
+        out << std::setprecision(4);
+        out << x << std::endl << std::endl;
+        out << std::setw(10);
+        out << x << std::endl << std::endl;
+        std::cout << out.str();
+    }
 
     PRINT(paz::mix(a, aNew, 0.1))
 
@@ -130,8 +135,12 @@ int main()
 
     paz::Mat seq(7, 11);
     std::iota(seq.begin(), seq.end(), std::size_t{0});
-    std::cout << std::setprecision(0);
-    PRINT(seq)
-    PRINT(seq.block(1, 2, 3, 5));
-    PRINT(seq.block(1, 2, 3, 5).block(1, 1, 2, 4))
+    {
+        std::ostringstream out;
+        out << std::fixed << std::setprecision(0);
+        PRINT2(seq)
+        PRINT2(seq.block(1, 2, 3, 5));
+        PRINT2(seq.block(1, 2, 3, 5).block(1, 1, 2, 4))
+        std::cout << out.str();
+    }
 }
