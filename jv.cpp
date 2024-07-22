@@ -45,7 +45,7 @@ double paz::jv(const Mat& costMat, std::vector<std::size_t>& rowSols)
     }
 
     const double minCost = costMat.min();
-    if(minCost == -paz::inf())
+    if(minCost == -inf())
     {
         throw std::runtime_error("All costs must be greater than negative infin"
             "ity.");
@@ -57,7 +57,7 @@ double paz::jv(const Mat& costMat, std::vector<std::size_t>& rowSols)
 
     const double maxCost = max_finite_cost(costMat) - minCost;
 
-    const double resolution = std::max(MinRes, paz::eps(maxCost*(rows + 1)));
+    const double resolution = std::max(MinRes, eps(maxCost*(rows + 1)));
     const std::int64_t intInf = std::round(maxCost/resolution)*(rows + 1);
 
     rowSols.resize(cols, None);
@@ -292,7 +292,7 @@ double paz::jv(const Mat& costMat, std::vector<std::size_t>& rowSols)
     }
     if(cost >= intInf)
     {
-        return paz::inf();
+        return inf();
     }
     return cost*resolution + minCost*rows;
 }
