@@ -456,80 +456,6 @@ paz::Mat paz::Mat::rep(std::size_t m, std::size_t n) const
     return res;
 }
 
-double& paz::Mat::operator()(std::size_t i, std::size_t j)
-{
-    if(i >= rows())
-    {
-        throw std::runtime_error("Row index out of range.");
-    }
-    if(j >= cols())
-    {
-        throw std::runtime_error("Column index out of range.");
-    }
-    return _vals[i + _rows*j];
-}
-
-double paz::Mat::operator()(std::size_t i, std::size_t j) const
-{
-    if(i >= rows())
-    {
-        throw std::runtime_error("Row index out of range.");
-    }
-    if(j >= cols())
-    {
-        throw std::runtime_error("Column index out of range.");
-    }
-    return _vals[i + _rows*j];
-}
-
-double& paz::Mat::operator()(std::size_t i)
-{
-    if(i >= size())
-    {
-        throw std::runtime_error("Index is out of range.");
-    }
-    return _vals[i];
-}
-
-double paz::Mat::operator()(std::size_t i) const
-{
-    if(i >= size())
-    {
-        throw std::runtime_error("Index is out of range.");
-    }
-    return _vals[i];
-}
-
-double* paz::Mat::data()
-{
-    return _vals.data();
-}
-
-const double* paz::Mat::data() const
-{
-    return _vals.data();
-}
-
-bool paz::Mat::empty() const
-{
-    return _vals.empty();
-}
-
-std::size_t paz::Mat::size() const
-{
-    return _vals.size();
-}
-
-std::size_t paz::Mat::rows() const
-{
-    return _rows;
-}
-
-std::size_t paz::Mat::cols() const
-{
-    return _cols;
-}
-
 double paz::Mat::normSq() const
 {
     return dot(*this);
@@ -873,11 +799,6 @@ void paz::Mat::shuffleCols()
             _rows*seq[i]);
     }
     swap(newVals, _vals);
-}
-
-paz::Mat paz::operator*(double lhs, const MatRef& rhs)
-{
-    return rhs*lhs;
 }
 
 std::ostream& paz::operator<<(std::ostream& out, const MatRef& rhs)

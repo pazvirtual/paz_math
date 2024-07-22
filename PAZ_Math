@@ -91,15 +91,16 @@ namespace paz
     }
 
     template<typename T = double, require_not_integral<T>* = nullptr>
-    inline T eps(T x)
+    T eps(T x)
     {
         const T x0 = std::abs(x);
         return std::nextafter(x0, inf<T>()) - x0;
     }
 
-    inline double nan()
+    template<typename T = double, require_not_integral<T>* = nullptr>
+    constexpr T nan()
     {
-        return std::nan("");
+        return std::numeric_limits<T>::quiet_NaN();
     }
 
     class Vec;
@@ -147,16 +148,70 @@ namespace paz
         Mat trans() const;
         Vec diag() const;
         Mat rep(std::size_t m, std::size_t n) const;
-        double& operator()(std::size_t i, std::size_t j);
-        double operator()(std::size_t i, std::size_t j) const;
-        double& operator()(std::size_t i);
-        double operator()(std::size_t i) const;
-        std::size_t size() const;
-        std::size_t rows() const;
-        std::size_t cols() const;
-        double* data();
-        const double* data() const;
-        bool empty() const;
+        double& operator()(std::size_t i, std::size_t j)
+        {
+            if(i >= rows())
+            {
+                throw std::runtime_error("Row index out of range.");
+            }
+            if(j >= cols())
+            {
+                throw std::runtime_error("Column index out of range.");
+            }
+            return _vals[i + _rows*j];
+        }
+        double operator()(std::size_t i, std::size_t j) const
+        {
+            if(i >= rows())
+            {
+                throw std::runtime_error("Row index out of range.");
+            }
+            if(j >= cols())
+            {
+                throw std::runtime_error("Column index out of range.");
+            }
+            return _vals[i + _rows*j];
+        }
+        double& operator()(std::size_t i)
+        {
+            if(i >= size())
+            {
+                throw std::runtime_error("Index is out of range.");
+            }
+            return _vals[i];
+        }
+        double operator()(std::size_t i) const
+        {
+            if(i >= size())
+            {
+                throw std::runtime_error("Index is out of range.");
+            }
+            return _vals[i];
+        }
+        std::size_t size() const
+        {
+            return _vals.size();
+        }
+        std::size_t rows() const
+        {
+            return _rows;
+        }
+        std::size_t cols() const
+        {
+            return _cols;
+        }
+        double* data()
+        {
+            return _vals.data();
+        }
+        const double* data() const
+        {
+            return _vals.data();
+        }
+        bool empty() const
+        {
+            return _vals.empty();
+        }
         auto begin()
         {
             return _vals.begin();
@@ -211,8 +266,6 @@ namespace paz
         void shuffleCols();
     };
 
-    Mat operator*(double lhs, const MatRef& rhs);
-
     std::ostream& operator<<(std::ostream& out, const MatRef& x);
 
     class Vec : public Mat
@@ -258,23 +311,129 @@ namespace paz
             difference_type origRows;
             difference_type blockRows;
 
-            iterator& operator--();
-            iterator operator--(int);
-            iterator& operator++();
-            iterator operator++(int);
-            iterator& operator-=(difference_type n);
-            iterator& operator+=(difference_type n);
-            iterator operator-(difference_type n) const;
-            iterator operator+(difference_type n) const;
-            difference_type operator-(const iterator& it) const;
-            reference operator*() const;
-            reference operator[](difference_type n) const;
-            bool operator==(const iterator& it) const;
-            bool operator!=(const iterator& it) const;
-            bool operator<=(const iterator& it) const;
-            bool operator>=(const iterator& it) const;
-            bool operator<(const iterator& it) const;
-            bool operator>(const iterator& it) const;
+            iterator& operator--()
+            {
+                --row;
+                if(row < 0)
+                {
+                    ptr += blockRows;
+                    ptr -= origRows + 1;
+                    row = blockRows - 1;
+                }
+                else
+                {
+                    --ptr;
+                }
+                return *this;
+            }
+            iterator operator--(int)
+            {
+                auto temp = *this;
+                --(*this);
+                return temp;
+            }
+            iterator& operator++()
+            {
+                ++row;
+                if(row == static_cast<difference_type>(blockRows))
+                {
+                    ptr += origRows + 1;
+                    ptr -= blockRows;
+                    row = 0;
+                }
+                else
+                {
+                    ++ptr;
+                }
+                return *this;
+            }
+            iterator operator++(int)
+            {
+                auto temp = *this;
+                ++(*this);
+                return temp;
+            }
+            iterator& operator-=(difference_type n)
+            {
+                return *this += -n;
+            }
+            iterator& operator+=(difference_type n)
+            {
+                const difference_type temp = row + n;
+                difference_type deltaCol = temp/blockRows;
+                difference_type deltaRow = n - blockRows*deltaCol;
+                if(temp < 0 && temp%blockRows)
+                {
+                    --deltaCol;
+                    deltaRow += blockRows;
+                }
+                ptr += deltaRow + origRows*deltaCol;
+                row += deltaRow;
+                return *this;
+            }
+            iterator operator-(difference_type n) const
+            {
+                auto temp = *this;
+                temp -= n;
+                return temp;
+            }
+            iterator operator+(difference_type n) const
+            {
+                auto temp = *this;
+                temp += n;
+                return temp;
+            }
+            difference_type operator-(const iterator& it) const
+            {
+                difference_type deltaPtr;
+                if(ptr < it.ptr)
+                {
+                    deltaPtr = -static_cast<difference_type>(it.ptr - ptr);
+                }
+                else
+                {
+                    deltaPtr = ptr - it.ptr;
+                }
+                difference_type deltaCol = deltaPtr/origRows;
+                if(deltaPtr < 0 && deltaPtr%origRows)
+                {
+                    --deltaCol;
+                }
+                const difference_type deltaRow = row - it.row;
+                return deltaRow + blockRows*deltaCol;
+            }
+            reference operator*() const
+            {
+                return *ptr;
+            }
+            reference operator[](difference_type n) const
+            {
+                return *(*this + n);
+            }
+            bool operator==(const iterator& it) const
+            {
+                return ptr == it.ptr;
+            }
+            bool operator!=(const iterator& it) const
+            {
+                return ptr != it.ptr;
+            }
+            bool operator<=(const iterator& it) const
+            {
+                return ptr <= it.ptr;
+            }
+            bool operator>=(const iterator& it) const
+            {
+                return ptr >= it.ptr;
+            }
+            bool operator<(const iterator& it) const
+            {
+                return ptr < it.ptr;
+            }
+            bool operator>(const iterator& it) const
+            {
+                return ptr > it.ptr;
+            }
         };
 
     private:
@@ -301,14 +460,50 @@ namespace paz
         Mat trans() const;
         Vec diag() const;
         Mat rep(std::size_t m, std::size_t n) const;
-        double operator()(std::size_t i, std::size_t j) const;
-        double operator()(std::size_t i) const;
-        std::size_t size() const;
-        std::size_t rows() const;
-        std::size_t cols() const;
-        bool empty() const;
-        const iterator& begin() const;
-        iterator end() const;
+        double operator()(std::size_t i, std::size_t j) const
+        {
+            if(i >= rows())
+            {
+                throw std::runtime_error("Row index out of range.");
+            }
+            if(j >= cols())
+            {
+                throw std::runtime_error("Column index out of range.");
+            }
+            return _begin[i + rows()*j];
+        }
+        double operator()(std::size_t i) const
+        {
+            if(i >= size())
+            {
+                throw std::runtime_error("Index is out of range.");
+            }
+            return _begin[i];
+        }
+        std::size_t size() const
+        {
+            return rows()*cols();
+        }
+        std::size_t rows() const
+        {
+            return _begin.blockRows;
+        }
+        std::size_t cols() const
+        {
+            return _blockCols;
+        }
+        bool empty() const
+        {
+            return !rows() || !cols();
+        }
+        const iterator& begin() const
+        {
+            return _begin;
+        }
+        iterator end() const
+        {
+            return _begin + size();
+        }
         double normSq() const;
         double norm() const;
         double sum() const;
@@ -334,11 +529,29 @@ namespace paz
         bool hasNan() const;
     };
 
-    MatRef::iterator operator+(MatRef::iterator::difference_type n, const
-        MatRef::iterator& it);
+    inline MatRef::iterator operator+(MatRef::iterator::difference_type n, const
+        MatRef::iterator& it)
+    {
+        return it + n;
+    }
 
-    bool operator==(const MatRef& a, const MatRef& b);
-    bool operator!=(const MatRef& a, const MatRef& b);
+    inline Mat operator*(double lhs, const MatRef& rhs)
+    {
+        return rhs*lhs;
+    }
+
+    inline bool operator==(const MatRef& a, const MatRef& b)
+    {
+        if(a.rows() != b.rows() || a.cols() != b.cols())
+        {
+            return false;
+        }
+        return std::equal(a.begin(), a.end(), b.begin());
+    }
+    inline bool operator!=(const MatRef& a, const MatRef& b)
+    {
+        return !(a == b);
+    }
 
     Mat to_mat(const Vec& q);
     Vec to_quat(const Mat& m);
