@@ -143,4 +143,10 @@ int main()
         PRINT2(seq.block(1, 2, 3, 5).block(1, 1, 2, 4))
         std::cout << out.str();
     }
+
+    {
+        std::vector<std::size_t> rowSols;
+        PRINT(jv(paz::Mat{{1.}}, rowSols))
+        PRINT(jv(paz::Mat{{1., 2., 3.}}, rowSols))
+    }
 }

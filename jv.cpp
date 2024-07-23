@@ -43,6 +43,15 @@ double paz::jv(const Mat& costMat, std::vector<std::size_t>& rowSols)
     {
         throw std::runtime_error("Matrix is too tall.");
     }
+    if(costMat.empty())
+    {
+        throw std::runtime_error("Matrix is empty.");
+    }
+    if(rows == 1 && cols == 1)
+    {
+        rowSols = {0};
+        return costMat(0, 0);
+    }
 
     const double minCost = costMat.min();
     if(minCost == -inf())
