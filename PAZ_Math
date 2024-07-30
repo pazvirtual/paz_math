@@ -138,7 +138,7 @@ namespace paz
 
         double det() const;
         Mat inv() const;
-        Mat solve(const Mat& b) const; // x : (*this)*x = b
+        Mat solve(const Mat& b) const; // x : (*this)*x = b (least squares)
         Mat chol() const;
         Mat cholUpdate(const Mat& m, double a) const;
         Vec eig() const;
@@ -450,7 +450,7 @@ namespace paz
         // All `const` methods of `paz::Mat` except `paz::Mat::data`.
         double det() const;
         Mat inv() const;
-        Mat solve(const Mat& b) const; // x : (*this)*x = b
+        Mat solve(const Mat& b) const; // x : (*this)*x = b (least squares)
         Mat chol() const;
         Mat cholUpdate(const Mat& m, double a) const;
         Vec eig() const;

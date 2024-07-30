@@ -186,11 +186,7 @@ paz::Mat paz::Mat::inv() const
 
 paz::Mat paz::Mat::solve(const Mat& b) const //TEMP - not `MatRef` to support `Eigen::Map`
 {
-    if(rows() != cols())
-    {
-        throw std::runtime_error("Matrix must be square.");
-    }
-    if(cols() != b.rows())
+    if(rows() != b.rows())
     {
         throw std::runtime_error("Matrix dimensions do not match.");
     }
@@ -200,7 +196,7 @@ paz::Mat paz::Mat::solve(const Mat& b) const //TEMP - not `MatRef` to support `E
     }
     Eigen::Map<const Eigen::MatrixXd> eigenA(data(), rows(), cols());
     Eigen::Map<const Eigen::MatrixXd> eigenB(b.data(), b.rows(), b.cols());
-    Mat x(b.rows(), b.cols());
+    Mat x(cols(), b.cols());
     Eigen::Map<Eigen::MatrixXd> eigenX(x.data(), x.rows(), x.cols());
     eigenX = eigenA.colPivHouseholderQr().solve(eigenB);
     return x;
