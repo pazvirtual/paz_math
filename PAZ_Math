@@ -437,12 +437,12 @@ namespace paz
         };
 
     private:
-        iterator _begin;
-        std::size_t _origCols;
-        std::size_t _blockCols;
+        const iterator _begin;
+        const std::size_t _origCols;
+        const std::size_t _blockCols;
 
-        MatRef(const Mat& m, std::size_t startRow, std::size_t startCol, std::
-            size_t numRows, std::size_t numCols);
+        MatRef(const double* ptr, std::size_t origRows, std::size_t origCols,
+            std::size_t blockRows, std::size_t blockCols);
 
     public:
         MatRef(const Mat& m);

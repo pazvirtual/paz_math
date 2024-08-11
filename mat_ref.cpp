@@ -1,12 +1,13 @@
 #include "PAZ_Math"
 
-paz::MatRef::MatRef(const Mat& m, std::size_t startRow, std::size_t startCol,
-    std::size_t numRows, std::size_t numCols) : _begin({m.data() + startRow +
-    m.rows()*startCol, 0, static_cast<iterator::difference_type>(m.rows()),
-    static_cast<iterator::difference_type>(numRows)}), _origCols(m.cols()),
-    _blockCols(numCols) {}
 
-paz::MatRef::MatRef(const Mat& m) : MatRef(m, 0, 0, m.rows(), m.cols()) {}
+paz::MatRef::MatRef(const double* ptr, std::size_t origRows, std::size_t
+    origCols, std::size_t blockRows, std::size_t blockCols) : _begin({ptr, 0,
+    static_cast<iterator::difference_type>(origRows), static_cast<iterator::
+    difference_type>(blockRows)}), _origCols(origCols), _blockCols(blockCols) {}
+
+paz::MatRef::MatRef(const Mat& m) : MatRef(m.data(), m.rows(), m.cols(), m.
+    rows(), m.cols()) {}
 
 double paz::MatRef::det() const
 {
@@ -234,12 +235,8 @@ paz::MatRef paz::MatRef::block(std::size_t startRow, std::size_t startCol, std::
     {
         throw std::runtime_error("Block is out of range.");
     }
-    auto res = *this;
-    res._begin.ptr += startRow + _begin.origRows*startCol;
-    res._begin.row = 0;
-    res._begin.blockRows = numRows;
-    res._blockCols = numCols;
-    return res;
+    return MatRef(_begin.ptr + startRow + _begin.origRows*startCol, _begin.
+        origRows, _origCols, _begin.blockRows, _blockCols);
 }
 
 paz::MatRef paz::MatRef::row(std::size_t m) const

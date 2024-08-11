@@ -672,7 +672,8 @@ paz::MatRef paz::Mat::block(std::size_t startRow, std::size_t startCol, std::
     {
         throw std::runtime_error("Block is out of range.");
     }
-    return MatRef(*this, startRow, startCol, numRows, numCols);
+    return MatRef(data() + startRow + rows()*startCol, rows(), cols(), numRows,
+        numCols);
 }
 
 void paz::Mat::setBlock(std::size_t startRow, std::size_t startCol, std::
