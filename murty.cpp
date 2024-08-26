@@ -1,6 +1,6 @@
 #include "PAZ_Math"
 
-void paz::murty(const Mat& costMat, std::size_t numBest, std::vector<std::
+void paz::murty(const MatRef& costMat, std::size_t numBest, std::vector<std::
     vector<std::size_t>>& rowSols, std::vector<double>& costs)
 {
     rowSols.clear();

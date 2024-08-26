@@ -553,13 +553,13 @@ namespace paz
         return !(a == b);
     }
 
-    Mat to_mat(const Vec& q);
-    Vec to_quat(const Mat& m);
-    Vec qinv(const Vec& q);
-    Mat xi(const Vec& q);
-    Vec qmult(const Vec& p, const Vec& q);
-    Vec axis_angle(const Vec& axis, double angle);
-    Vec nlerp(const Vec& p, const Vec& q, double k);
+    Mat to_mat(const MatRef& q);
+    Vec to_quat(const MatRef& m);
+    Vec qinv(const MatRef& q);
+    Mat xi(const MatRef& q);
+    Vec qmult(const MatRef& p, const MatRef& q);
+    Vec axis_angle(const MatRef& axis, double angle);
+    Vec nlerp(const MatRef& p, const MatRef& q, double k);
 
     template<typename T, require_iterable<T>* = nullptr>
     bool any_true(const T& v)
@@ -586,15 +586,16 @@ namespace paz
         return std::accumulate(std::begin(v), std::end(v), std::size_t{0});
     }
 
-    double gaussian_pdf(const Vec& mean, const Mat& cholCov, const Vec& x);
-    double cs_divergence(const Vec& meanA, const Mat& cholCovA, const Vec&
-        meanB, const Mat& cholCovB);
+    double gaussian_pdf(const MatRef& mean, const MatRef& cholCov, const MatRef&
+        x);
+    double cs_divergence(const MatRef& meanA, const MatRef& cholCovA, const
+        MatRef& meanB, const MatRef& cholCovB);
     Vec gmm_rand(const std::vector<double>& weights, const std::vector<Vec>&
         means, const std::vector<Mat>& cholCovs);
 
-    double jv(const Mat& costMat, std::vector<std::size_t>& rowSols);
-    void murty(const Mat& costMat, std::size_t numBest, std::vector<std::vector<
-        std::size_t>>& rowSols, std::vector<double>& costs);
+    double jv(const MatRef& costMat, std::vector<std::size_t>& rowSols);
+    void murty(const MatRef& costMat, std::size_t numBest, std::vector<std::
+        vector<std::size_t>>& rowSols, std::vector<double>& costs);
 
     Mat rot1(double angle);
     Mat rot2(double angle);

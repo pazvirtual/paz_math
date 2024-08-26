@@ -1,8 +1,8 @@
 #include "PAZ_Math"
 
-paz::Mat paz::to_mat(const Vec& q)
+paz::Mat paz::to_mat(const MatRef& q)
 {
-    if(q.size() != 4)
+    if(q.rows() != 4 || q.cols() != 1)
     {
         throw std::runtime_error("Not a quaternion.");
     }
@@ -20,7 +20,7 @@ paz::Mat paz::to_mat(const Vec& q)
             {     2.*(xz + yw),      2.*(yz - xw), 1. - 2.*(xx + yy)}};
 }
 
-paz::Vec paz::to_quat(const Mat& m)
+paz::Vec paz::to_quat(const MatRef& m)
 {
     if(m.rows() != 3 || m.cols() != 3)
     {
@@ -74,18 +74,18 @@ paz::Vec paz::to_quat(const Mat& m)
     }
 }
 
-paz::Vec paz::qinv(const Vec& q)
+paz::Vec paz::qinv(const MatRef& q)
 {
-    if(q.size() != 4)
+    if(q.rows() != 4 || q.cols() != 1)
     {
         throw std::runtime_error("Not a quaternion.");
     }
     return {{-q(0), -q(1), -q(2), q(3)}};
 }
 
-paz::Mat paz::xi(const Vec& q)
+paz::Mat paz::xi(const MatRef& q)
 {
-    if(q.size() != 4)
+    if(q.rows() != 4 || q.cols() != 1)
     {
         throw std::runtime_error("Not a quaternion.");
     }
@@ -95,27 +95,31 @@ paz::Mat paz::xi(const Vec& q)
             {-q(0), -q(1), -q(2)}};
 }
 
-paz::Vec paz::qmult(const Vec& p, const Vec& q)
+paz::Vec paz::qmult(const MatRef& p, const MatRef& q)
 {
-    if(p.size() != 4 || q.size() != 4)
+    if(p.rows() != 4 || p.cols() != 1 || q.rows() != 4 || q.cols() != 1)
     {
         throw std::runtime_error("Not a quaternion.");
     }
-    const Vec pVec = p.head(3);
-    const Vec qVec = q.head(3);
+    const Vec pVec = p.block(0, 0, 3, 1);
+    const Vec qVec = q.block(0, 0, 3, 1);
     const Vec rVec = q(3)*pVec + p(3)*qVec - pVec.cross(qVec);
     return {{rVec(0), rVec(1), rVec(2), p(3)*q(3) - pVec.dot(qVec)}};
 }
 
-paz::Vec paz::axis_angle(const Vec& axis, double angle)
+paz::Vec paz::axis_angle(const MatRef& axis, double angle)
 {
+    if(axis.rows() != 3 || axis.cols() != 1)
+    {
+        throw std::runtime_error("Not a 3-vector.");
+    }
     const double s = std::sin(0.5*angle);
     return Vec{{s*axis(0), s*axis(1), s*axis(2), std::cos(0.5*angle)}};
 }
 
-paz::Vec paz::nlerp(const Vec& p, const Vec& q, double k)
+paz::Vec paz::nlerp(const MatRef& p, const MatRef& q, double k)
 {
-    if(p.size() != 4 || q.size() != 4)
+    if(p.rows() != 4 || p.cols() != 1 || q.rows() != 4 || q.cols() != 1)
     {
         throw std::runtime_error("Not a quaternion.");
     }

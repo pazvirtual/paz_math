@@ -1,7 +1,12 @@
 #include "PAZ_Math"
 
-double paz::gaussian_pdf(const Vec& mean, const Mat& cholCov, const Vec& x)
+double paz::gaussian_pdf(const MatRef& mean, const MatRef& cholCov, const
+    MatRef& x)
 {
+    if(mean.cols() != 1 || x.cols() != 1)
+    {
+        throw std::runtime_error("Not a column vector.");
+    }
     double p = 1.;
     for(std::size_t i = 0; i < mean.size(); ++i)
     {
@@ -17,9 +22,13 @@ double paz::gaussian_pdf(const Vec& mean, const Mat& cholCov, const Vec& x)
         detCov);
 }
 
-double paz::cs_divergence(const Vec& meanA, const Mat& cholCovA, const Vec&
-    meanB, const Mat& cholCovB)
+double paz::cs_divergence(const MatRef& meanA, const MatRef& cholCovA, const
+    MatRef& meanB, const MatRef& cholCovB)
 {
+    if(meanA.cols() != 1 || meanB.cols() != 1)
+    {
+        throw std::runtime_error("Not a column vector.");
+    }
     double p2 = 1.;
     for(std::size_t i = 0; i < meanA.size(); ++i)
     {
