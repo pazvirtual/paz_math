@@ -149,4 +149,10 @@ int main()
         PRINT(jv(paz::Mat{{1.}}, rowSols))
         PRINT(jv(paz::Mat{{1., 2., 3.}}, rowSols))
     }
+
+    {
+        paz::Vec p = paz::Vec::Randn(4).normalized();
+        paz::Vec q = paz::Vec::Randn(4).normalized();
+        PRINT(qmult(p, q).trans())
+    }
 }

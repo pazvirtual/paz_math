@@ -236,7 +236,7 @@ paz::MatRef paz::MatRef::block(std::size_t startRow, std::size_t startCol, std::
         throw std::runtime_error("Block is out of range.");
     }
     return MatRef(_begin.ptr + startRow + _begin.origRows*startCol, _begin.
-        origRows, _origCols, _begin.blockRows, _blockCols);
+        origRows, _origCols, numRows, numCols);
 }
 
 paz::MatRef paz::MatRef::row(std::size_t m) const
