@@ -59,7 +59,7 @@ double paz::jv(const MatRef& costMat, std::vector<std::size_t>& rowSols)
     }
     if(!std::isfinite(minCost))
     {
-        throw std::runtime_error("All costs are infinite.");
+        return inf();
     }
 
     const double maxCost = max_finite_cost(costMat) - minCost;

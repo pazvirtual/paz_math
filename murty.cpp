@@ -14,7 +14,7 @@ void paz::murty(const MatRef& costMat, std::size_t numBest, std::vector<std::
     std::vector<std::size_t> bestSol;
     const double bestCost = jv(costMat, bestSol);
 
-    if(numBest == 1)
+    if(numBest == 1 || bestCost == paz::inf())
     {
         rowSols = {bestSol};
         costs = {bestCost};
