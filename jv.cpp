@@ -3,8 +3,6 @@
 
 #define GET_COST(i, j) get_cost(costMat, resolution, intInf, i, j, -minCost)
 
-constexpr double MinRes = 1e-9;
-
 // Handle non-square matrices. (1/2)
 static std::int64_t get_cost(const paz::MatRef& costMat, double resolution,
     std::int64_t intInf, std::size_t i, std::size_t j, double offset)
@@ -66,10 +64,21 @@ double paz::jv(const MatRef& costMat, std::vector<std::size_t>& rowSols)
 
     const double maxCost = max_finite_cost(costMat) - minCost;
 
-    const double resolution = std::max(MinRes, eps(maxCost*(rows + 1)));
-    const std::int64_t intInf = std::round(maxCost/resolution)*(rows + 1);
+    double resolution;
+    std::int64_t intInf;
+    if(maxCost)
+    {
+        resolution = eps(maxCost*(rows + 1));
+        intInf = std::round(maxCost/resolution)*(rows + 1);
+    }
+    else
+    {
+        resolution = 1.;
+        intInf = rows + 1;
+    }
 
-    rowSols.resize(cols, None);
+    rowSols.resize(cols);
+    std::fill(rowSols.begin(), rowSols.end(), None);
     std::vector<std::size_t> colSols(cols, None);
 
     std::vector<std::size_t> colList(cols);

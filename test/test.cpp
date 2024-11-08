@@ -148,6 +148,8 @@ int main()
         std::vector<std::size_t> rowSols;
         PRINT(jv(paz::Mat{{1.}}, rowSols))
         PRINT(jv(paz::Mat{{1., 2., 3.}}, rowSols))
+        PRINT(jv(paz::Mat{{0., paz::inf()}}, rowSols))
+        PRINT(jv(paz::Mat{{paz::inf(), 0.}}, rowSols))
     }
 
     {
