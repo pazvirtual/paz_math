@@ -218,7 +218,7 @@ paz::Mat paz::Mat::chol() const
         throw std::runtime_error("Matrix contains NaN.");
     }
     Eigen::LLT<Eigen::MatrixXd> llt(m);
-    if(llt.info() == Eigen::NumericalIssue)
+    if(llt.info() != Eigen::Success)
     {
         throw std::runtime_error("Cholesky decomposition failed.");
     }
@@ -260,7 +260,7 @@ paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const //TEMP - not `MatRef
         {
             llt.rankUpdate(eigenM.col(i), std::sqrt(a));
         }
-        if(llt.info() == Eigen::NumericalIssue)
+        if(llt.info() != Eigen::Success)
         {
             throw std::runtime_error("Cholesky update failed.");
         }
@@ -287,7 +287,7 @@ paz::Vec paz::Mat::eig() const
         throw std::runtime_error("Matrix contains NaN.");
     }
     Eigen::EigenSolver<Eigen::MatrixXd> eig(m);
-    if(eig.info() == Eigen::NumericalIssue)
+    if(eig.info() != Eigen::Success)
     {
         throw std::runtime_error("Eigendecomposition failed.");
     }
@@ -317,7 +317,7 @@ paz::Vec paz::Mat::eig(Mat& vecs) const
         throw std::runtime_error("Matrix contains NaN.");
     }
     Eigen::EigenSolver<Eigen::MatrixXd> eig(m);
-    if(eig.info() == Eigen::NumericalIssue)
+    if(eig.info() != Eigen::Success)
     {
         throw std::runtime_error("Eigendecomposition failed.");
     }
