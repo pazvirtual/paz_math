@@ -347,11 +347,6 @@ void paz::Mat::qr(Mat& q, Mat& r) const //TEMP - not `MatRef` to support `Eigen:
         r = {};
         return;
     }
-    if(rows() < cols())
-    {
-        throw std::runtime_error("Matrix must have at least as many rows as col"
-            "umns.");
-    }
     Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
     if(m.hasNaN())
     {
@@ -374,11 +369,6 @@ void paz::Mat::qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const //TEMP - no
         r = {};
         p = {};
         return;
-    }
-    if(rows() < cols())
-    {
-        throw std::runtime_error("Matrix must have at least as many rows as col"
-            "umns.");
     }
     Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
     if(m.hasNaN())
