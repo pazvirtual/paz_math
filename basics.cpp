@@ -136,3 +136,47 @@ paz::Mat paz::rot3(double angle)
             {-s,  c, 0.},
             {0., 0., 1.}};
 }
+
+std::vector<double> paz::real(const std::vector<complex>& v)
+{
+    const std::size_t n = v.size();
+    std::vector<double> res(n);
+    for(std::size_t i = 0; i < n; ++i)
+    {
+        res[i] = v[i].real();
+    }
+    return res;
+}
+
+std::vector<double> paz::imag(const std::vector<complex>& v)
+{
+    const std::size_t n = v.size();
+    std::vector<double> res(n);
+    for(std::size_t i = 0; i < n; ++i)
+    {
+        res[i] = v[i].imag();
+    }
+    return res;
+}
+
+std::vector<double> paz::abs(const std::vector<complex>& v)
+{
+    const std::size_t n = v.size();
+    std::vector<double> res(n);
+    for(std::size_t i = 0; i < n; ++i)
+    {
+        res[i] = std::abs(v[i]);
+    }
+    return res;
+}
+
+std::vector<double> paz::arg(const std::vector<complex>& v)
+{
+    const std::size_t n = v.size();
+    std::vector<double> res(n);
+    for(std::size_t i = 0; i < n; ++i)
+    {
+        res[i] = std::arg(v[i]);
+    }
+    return res;
+}

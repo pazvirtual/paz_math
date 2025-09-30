@@ -6,6 +6,7 @@
 #include <ostream>
 #include <numeric>
 #include <algorithm>
+#include <complex>
 
 namespace paz
 {
@@ -20,12 +21,16 @@ namespace paz
     template<typename T>
     using require_not_integral = std::enable_if_t<!std::is_integral<T>::value>;
 
+    using complex = std::complex<double>;
+
     constexpr double NatBase   = 2.71828182845904523536028747135; // M_E
     constexpr double SqrtTwo   = 1.41421356237309504880168872421; // M_SQRT2
     constexpr double SqrtHalf  = 0.70710678118654752440084436210; // M_SQRT1_2
     constexpr double SqrtThree = 1.73205080756887729352744634151; // M_SQRT3
     constexpr double Pi        = 3.14159265358979323846264338328; // M_PI
     constexpr double TwoPi     = 6.28318530717958647692528676656; // 2.*M_PI
+
+    constexpr complex ImagUnit = {0, 1};
 
     constexpr std::size_t None = std::numeric_limits<std::size_t>::max();
 
@@ -600,6 +605,17 @@ namespace paz
     Mat rot1(double angle);
     Mat rot2(double angle);
     Mat rot3(double angle);
+
+    std::vector<complex> fft(const std::vector<complex>& timeSamples);
+    std::vector<complex> ifft(const std::vector<complex>& freqSamples);
+
+    std::vector<complex> fftshift(const std::vector<complex>& freqSamples);
+    std::vector<complex> ifftshift(const std::vector<complex>& freqSamples);
+
+    std::vector<double> real(const std::vector<complex>& v);
+    std::vector<double> imag(const std::vector<complex>& v);
+    std::vector<double> abs(const std::vector<complex>& v);
+    std::vector<double> arg(const std::vector<complex>& v);
 }
 
 #endif
