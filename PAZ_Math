@@ -616,6 +616,7 @@ namespace paz
     std::vector<double> imag(const std::vector<complex>& v);
     std::vector<double> abs(const std::vector<complex>& v);
     std::vector<double> arg(const std::vector<complex>& v);
+    std::vector<complex> conj(const std::vector<complex>& v);
 }
 
 #endif

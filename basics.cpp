@@ -180,3 +180,14 @@ std::vector<double> paz::arg(const std::vector<complex>& v)
     }
     return res;
 }
+
+std::vector<paz::complex> paz::conj(const std::vector<complex>& v)
+{
+    const std::size_t n = v.size();
+    std::vector<complex> res(n);
+    for(std::size_t i = 0; i < n; ++i)
+    {
+        res[i] = std::conj(v[i]);
+    }
+    return res;
+}
