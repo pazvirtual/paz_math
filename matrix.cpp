@@ -294,8 +294,8 @@ paz::Vec paz::Mat::eig() const
     Vec vals(rows());
     for(std::size_t i = 0; i < rows(); ++i)
     {
-        vals(i) = eig.eigenvalues()(i).imag() ? std::nan("") : eig. //TEMP
-            eigenvalues()(i).real();
+        vals(i) = eig.eigenvalues()(i).imag() ? nan() : eig.eigenvalues()(i). //TEMP
+            real();
     }
     return vals;
 }
@@ -324,15 +324,15 @@ paz::Vec paz::Mat::eig(Mat& vecs) const
     Vec vals(rows());
     for(std::size_t i = 0; i < rows(); ++i)
     {
-        vals(i) = eig.eigenvalues()(i).imag() ? std::nan("") : eig. //TEMP
-            eigenvalues()(i).real();
+        vals(i) = eig.eigenvalues()(i).imag() ? nan() : eig.eigenvalues()(i). //TEMP
+            real();
     }
     vecs = Mat(rows(), cols());
     for(std::size_t i = 0; i < rows(); ++i)
     {
         for(std::size_t j = 0; j < cols(); ++j)
         {
-            vecs(i, j) = eig.eigenvectors()(i, j).imag() ? std::nan("") : eig. //TEMP
+            vecs(i, j) = eig.eigenvectors()(i, j).imag() ? nan() : eig. //TEMP
                 eigenvectors()(i, j).real();
         }
     }
