@@ -157,4 +157,20 @@ int main()
         paz::Vec q = paz::Vec::Randn(4).normalized();
         PRINT(qmult(p, q).trans())
     }
+
+    {
+        std::vector<paz::complex> v(8);
+        for(auto& n : v)
+        {
+            n = {paz::randn(), paz::randn()};
+        }
+        const std::vector<paz::complex> u = paz::ifft(paz::fft(v));
+        std::cout << "v                     ifft(fft(v))" << std::endl;
+        std::ostringstream out;
+        out << std::fixed;
+        for(std::size_t i = 0; i < v.size(); ++i)
+        {   out << std::setw(21) << v[i] << ' ' << std::setw(21) << u[i] << std::endl;
+        }
+        std::cout << out.str() << std::endl;
+    }
 }
