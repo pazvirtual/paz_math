@@ -110,3 +110,8 @@ void paz::Vec::resize(std::size_t newRows)
 {
     resizeRows(newRows);
 }
+
+void paz::Vec::resize(std::size_t newRows, double c)
+{
+    resizeRows(newRows, c);
+}

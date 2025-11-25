@@ -114,3 +114,8 @@ void paz::ComplexVec::resize(std::size_t newRows)
 {
     resizeRows(newRows);
 }
+
+void paz::ComplexVec::resize(std::size_t newRows, complex c)
+{
+    resizeRows(newRows, c);
+}

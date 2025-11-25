@@ -267,8 +267,11 @@ namespace paz
         MatRef col(std::size_t n) const;
         void setCol(std::size_t n, const MatRef& rhs);
         void resize(std::size_t newRows, std::size_t newCols);
+        void resize(std::size_t newRows, std::size_t newCols, double c);
         void resizeRows(std::size_t newRows);
+        void resizeRows(std::size_t newRows, double c);
         void resizeCols(std::size_t newCols);
+        void resizeCols(std::size_t newCols, double c);
         bool hasNan() const;
         void shuffleCols();
         Mat abs() const;
@@ -299,6 +302,7 @@ namespace paz
         MatRef tail(std::size_t n) const;
         void setTail(std::size_t n, const Vec& rhs);
         void resize(std::size_t newRows);
+        void resize(std::size_t newRows, double c);
     };
 
     class MatRef
@@ -723,8 +727,11 @@ namespace paz
         ComplexMatRef col(std::size_t n) const;
         void setCol(std::size_t n, const ComplexMatRef& rhs);
         void resize(std::size_t newRows, std::size_t newCols);
+        void resize(std::size_t newRows, std::size_t newCols, complex c);
         void resizeRows(std::size_t newRows);
+        void resizeRows(std::size_t newRows, complex c);
         void resizeCols(std::size_t newCols);
+        void resizeCols(std::size_t newCols, complex c);
         bool hasNan() const;
         void shuffleCols();
         Mat real() const;
@@ -762,6 +769,7 @@ namespace paz
         ComplexMatRef tail(std::size_t n) const;
         void setTail(std::size_t n, const ComplexVec& rhs);
         void resize(std::size_t newRows);
+        void resize(std::size_t newRows, complex c);
     };
 
     class ComplexMatRef

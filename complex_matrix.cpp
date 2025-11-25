@@ -733,6 +733,13 @@ void paz::ComplexMat::resize(std::size_t newRows, std::size_t newCols)
     resizeCols(newCols);
 }
 
+void paz::ComplexMat::resize(std::size_t newRows, std::size_t newCols, complex
+    c)
+{
+    resizeRows(newRows, c);
+    resizeCols(newCols, c);
+}
+
 void paz::ComplexMat::resizeRows(std::size_t newRows)
 {
     if(newRows == _rows)
@@ -757,6 +764,30 @@ void paz::ComplexMat::resizeRows(std::size_t newRows)
     _rows = newRows;
 }
 
+void paz::ComplexMat::resizeRows(std::size_t newRows, complex c)
+{
+    if(newRows == _rows)
+    {
+        return;
+    }
+    if(empty())
+    {
+        _vals.resize(newRows*_cols, c);
+    }
+    else
+    {
+        std::vector<complex> newVals(newRows*_cols, c);
+        const std::size_t copyRows = std::min(newRows, _rows);
+        for(std::size_t i = 0; i < _cols; ++i)
+        {
+            std::copy(begin() + _rows*i, begin() + _rows*i + copyRows, newVals.
+                begin() + newRows*i);
+        }
+        std::swap(newVals, _vals);
+    }
+    _rows = newRows;
+}
+
 void paz::ComplexMat::resizeCols(std::size_t newCols)
 {
     if(newCols == _cols)
@@ -764,6 +795,16 @@ void paz::ComplexMat::resizeCols(std::size_t newCols)
         return;
     }
     _vals.resize(_rows*newCols);
+    _cols = newCols;
+}
+
+void paz::ComplexMat::resizeCols(std::size_t newCols, complex c)
+{
+    if(newCols == _cols)
+    {
+        return;
+    }
+    _vals.resize(_rows*newCols, c);
     _cols = newCols;
 }
 
