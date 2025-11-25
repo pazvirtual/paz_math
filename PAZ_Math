@@ -113,6 +113,8 @@ namespace paz
     class Mat
     {
         friend class MatRef;
+        friend class ComplexMat;
+        friend class ComplexMatRef;
 
         std::vector<double> _vals;
         std::size_t _rows = 0;
@@ -269,6 +271,7 @@ namespace paz
         void resizeCols(std::size_t newCols);
         bool hasNan() const;
         void shuffleCols();
+        Mat abs() const;
     };
 
     std::ostream& operator<<(std::ostream& out, const MatRef& x);
@@ -532,6 +535,7 @@ namespace paz
         MatRef row(std::size_t m) const;
         MatRef col(std::size_t n) const;
         bool hasNan() const;
+        Mat abs() const;
     };
 
     inline MatRef::iterator operator+(MatRef::iterator::difference_type n, const
@@ -554,6 +558,476 @@ namespace paz
         return std::equal(a.begin(), a.end(), b.begin());
     }
     inline bool operator!=(const MatRef& a, const MatRef& b)
+    {
+        return !(a == b);
+    }
+
+    class ComplexVec;
+    class ComplexMatRef;
+    class ComplexMat
+    {
+        friend class ComplexMatRef;
+
+        std::vector<complex> _vals;
+        std::size_t _rows = 0;
+        std::size_t _cols = 0;
+
+    public:
+        static ComplexMat Constant(std::size_t rows, std::size_t cols, complex
+            c);
+        static ComplexMat Constant(std::size_t side, complex c);
+        static ComplexMat Zero(std::size_t rows, std::size_t cols);
+        static ComplexMat Zero(std::size_t side);
+        static ComplexMat Ones(std::size_t rows, std::size_t cols);
+        static ComplexMat Ones(std::size_t side);
+        static ComplexMat Identity(std::size_t side);
+        static ComplexMat Diag(const ComplexMatRef& vals);
+        static ComplexMat BlockDiag(const ComplexMatRef& a, const ComplexMatRef&
+            b);
+        static ComplexMat Cross(const ComplexMatRef& vals);
+        static ComplexMat Hcat(const ComplexMatRef& a, const ComplexMatRef& b);
+        static ComplexMat Vcat(const ComplexMatRef& a, const ComplexMatRef& b);
+        static ComplexMat Randn(std::size_t rows, std::size_t cols);
+        static ComplexMat Randn(std::size_t side);
+
+        ComplexMat() = default;
+        ComplexMat(std::size_t rows, std::size_t cols);
+        ComplexMat(std::size_t side);
+        ComplexMat(const ComplexVec& v);
+        ComplexMat(const ComplexMatRef& m);
+        ComplexMat(const std::initializer_list<std::initializer_list<complex>>&
+            list);
+
+        complex det() const;
+        ComplexMat inv() const;
+        ComplexMat solve(const ComplexMat& b) const; // x : (*this)*x = b (least squares)
+        ComplexMat chol() const;
+        ComplexMat cholUpdate(const ComplexMat& m, double a) const;
+        ComplexVec eig() const;
+        ComplexVec eig(ComplexMat& vecs) const;
+        void qr(ComplexMat& q, ComplexMat& r) const;
+        void qr(ComplexMat& q, ComplexMat& r, std::vector<std::size_t>& p)
+            const;
+        ComplexMat trans() const;
+        ComplexVec diag() const;
+        ComplexMat rep(std::size_t m, std::size_t n) const;
+        complex& operator()(std::size_t i, std::size_t j)
+        {
+            if(i >= rows())
+            {
+                throw std::runtime_error("Row index out of range.");
+            }
+            if(j >= cols())
+            {
+                throw std::runtime_error("Column index out of range.");
+            }
+            return _vals[i + _rows*j];
+        }
+        complex operator()(std::size_t i, std::size_t j) const
+        {
+            if(i >= rows())
+            {
+                throw std::runtime_error("Row index out of range.");
+            }
+            if(j >= cols())
+            {
+                throw std::runtime_error("Column index out of range.");
+            }
+            return _vals[i + _rows*j];
+        }
+        complex& operator()(std::size_t i)
+        {
+            if(i >= size())
+            {
+                throw std::runtime_error("Index is out of range.");
+            }
+            return _vals[i];
+        }
+        complex operator()(std::size_t i) const
+        {
+            if(i >= size())
+            {
+                throw std::runtime_error("Index is out of range.");
+            }
+            return _vals[i];
+        }
+        std::size_t size() const
+        {
+            return _vals.size();
+        }
+        std::size_t rows() const
+        {
+            return _rows;
+        }
+        std::size_t cols() const
+        {
+            return _cols;
+        }
+        complex* data()
+        {
+            return _vals.data();
+        }
+        const complex* data() const
+        {
+            return _vals.data();
+        }
+        bool empty() const
+        {
+            return _vals.empty();
+        }
+        auto begin()
+        {
+            return _vals.begin();
+        }
+        auto begin() const
+        {
+            return _vals.begin();
+        }
+        auto end()
+        {
+            return _vals.end();
+        }
+        auto end() const
+        {
+            return _vals.end();
+        }
+        complex normSq() const;
+        complex norm() const;
+        complex sum() const;
+        ComplexVec rowSum() const;
+        ComplexMat colSum() const;
+        complex min() const;
+        complex max() const;
+        ComplexMat normalized() const;
+        ComplexMat prod(const ComplexMatRef& rhs) const; // elementwise
+        ComplexMat quot(const ComplexMatRef& rhs) const; // elementwise
+        ComplexMat& operator*=(const ComplexMatRef& rhs);
+        ComplexMat operator*(const ComplexMatRef& rhs) const;
+        ComplexMat& operator+=(const ComplexMatRef& rhs);
+        ComplexMat operator+(const ComplexMatRef& rhs) const;
+        ComplexMat& operator-=(const ComplexMatRef& rhs);
+        ComplexMat operator-(const ComplexMatRef& rhs) const;
+        ComplexMat& operator*=(complex rhs);
+        ComplexMat operator*(complex rhs) const;
+        ComplexMat& operator/=(complex rhs);
+        ComplexMat operator/(complex rhs) const;
+        ComplexMat operator-() const;
+        complex dot(const ComplexMatRef& rhs) const;
+        ComplexVec cross(const ComplexMatRef& rhs) const;
+        ComplexMatRef block(std::size_t startRow, std::size_t startCol, std::
+            size_t numRows, std::size_t numCols) const;
+        void setBlock(std::size_t startRow, std::size_t startCol, std::size_t
+            numRows, std::size_t numCols, const ComplexMatRef& rhs);
+        ComplexMatRef row(std::size_t m) const;
+        void setRow(std::size_t m, const ComplexMatRef& rhs);
+        ComplexMatRef col(std::size_t n) const;
+        void setCol(std::size_t n, const ComplexMatRef& rhs);
+        void resize(std::size_t newRows, std::size_t newCols);
+        void resizeRows(std::size_t newRows);
+        void resizeCols(std::size_t newCols);
+        bool hasNan() const;
+        void shuffleCols();
+        Mat real() const;
+        Mat imag() const;
+        Mat abs() const;
+        Mat arg() const;
+        ComplexMat conj() const;
+        ComplexMat conjTrans() const;
+    };
+
+    std::ostream& operator<<(std::ostream& out, const ComplexMatRef& x);
+
+    class ComplexVec : public ComplexMat
+    {
+    public:
+        static ComplexVec Constant(std::size_t rows, complex c);
+        static ComplexVec Zero(std::size_t rows);
+        static ComplexVec Ones(std::size_t rows);
+        static ComplexVec IdQuat();
+        static ComplexVec Randn(std::size_t rows);
+        static ComplexVec Cat(const ComplexMatRef& a, const ComplexMatRef& b);
+
+        ComplexVec() = default;
+        ComplexVec(std::size_t rows);
+        ComplexVec(const ComplexMat& m);
+        ComplexVec(const ComplexMatRef& m);
+        ComplexVec(const std::initializer_list<std::initializer_list<complex>>&
+            list);
+
+        ComplexMatRef segment(std::size_t start, std::size_t n) const;
+        void setSegment(std::size_t start, std::size_t n, const ComplexMatRef&
+            rhs);
+        ComplexMatRef head(std::size_t n) const;
+        void setHead(std::size_t n, const ComplexVec& rhs);
+        ComplexMatRef tail(std::size_t n) const;
+        void setTail(std::size_t n, const ComplexVec& rhs);
+        void resize(std::size_t newRows);
+    };
+
+    class ComplexMatRef
+    {
+        friend class ComplexMat;
+
+    public:
+        struct iterator
+        {
+            using value_type = complex;
+            using difference_type = std::ptrdiff_t;
+            using reference = const complex&;
+            using pointer = const complex*;
+            using iterator_category = std::random_access_iterator_tag;
+
+            pointer ptr;
+            difference_type row;
+            difference_type origRows;
+            difference_type blockRows;
+
+            iterator& operator--()
+            {
+                --row;
+                if(row < 0)
+                {
+                    ptr += blockRows;
+                    ptr -= origRows + 1;
+                    row = blockRows - 1;
+                }
+                else
+                {
+                    --ptr;
+                }
+                return *this;
+            }
+            iterator operator--(int)
+            {
+                auto temp = *this;
+                --(*this);
+                return temp;
+            }
+            iterator& operator++()
+            {
+                ++row;
+                if(row == static_cast<difference_type>(blockRows))
+                {
+                    ptr += origRows + 1;
+                    ptr -= blockRows;
+                    row = 0;
+                }
+                else
+                {
+                    ++ptr;
+                }
+                return *this;
+            }
+            iterator operator++(int)
+            {
+                auto temp = *this;
+                ++(*this);
+                return temp;
+            }
+            iterator& operator-=(difference_type n)
+            {
+                return *this += -n;
+            }
+            iterator& operator+=(difference_type n)
+            {
+                const difference_type temp = row + n;
+                difference_type deltaCol = temp/blockRows;
+                difference_type deltaRow = n - blockRows*deltaCol;
+                if(temp < 0 && temp%blockRows)
+                {
+                    --deltaCol;
+                    deltaRow += blockRows;
+                }
+                ptr += deltaRow + origRows*deltaCol;
+                row += deltaRow;
+                return *this;
+            }
+            iterator operator-(difference_type n) const
+            {
+                auto temp = *this;
+                temp -= n;
+                return temp;
+            }
+            iterator operator+(difference_type n) const
+            {
+                auto temp = *this;
+                temp += n;
+                return temp;
+            }
+            difference_type operator-(const iterator& it) const
+            {
+                difference_type deltaPtr;
+                if(ptr < it.ptr)
+                {
+                    deltaPtr = -static_cast<difference_type>(it.ptr - ptr);
+                }
+                else
+                {
+                    deltaPtr = ptr - it.ptr;
+                }
+                difference_type deltaCol = deltaPtr/origRows;
+                if(deltaPtr < 0 && deltaPtr%origRows)
+                {
+                    --deltaCol;
+                }
+                const difference_type deltaRow = row - it.row;
+                return deltaRow + blockRows*deltaCol;
+            }
+            reference operator*() const
+            {
+                return *ptr;
+            }
+            reference operator[](difference_type n) const
+            {
+                return *(*this + n);
+            }
+            bool operator==(const iterator& it) const
+            {
+                return ptr == it.ptr;
+            }
+            bool operator!=(const iterator& it) const
+            {
+                return ptr != it.ptr;
+            }
+            bool operator<=(const iterator& it) const
+            {
+                return ptr <= it.ptr;
+            }
+            bool operator>=(const iterator& it) const
+            {
+                return ptr >= it.ptr;
+            }
+            bool operator<(const iterator& it) const
+            {
+                return ptr < it.ptr;
+            }
+            bool operator>(const iterator& it) const
+            {
+                return ptr > it.ptr;
+            }
+        };
+
+    private:
+        const iterator _begin;
+        const std::size_t _origCols;
+        const std::size_t _blockCols;
+
+        ComplexMatRef(const complex* ptr, std::size_t origRows, std::size_t
+            origCols, std::size_t blockRows, std::size_t blockCols);
+
+    public:
+        ComplexMatRef(const ComplexMat& m);
+
+        // All `const` methods of `paz::ComplexMat` except
+        // `paz::ComplexMat::data`.
+        complex det() const;
+        ComplexMat inv() const;
+        ComplexMat solve(const ComplexMat& b) const; // x : (*this)*x = b (least squares)
+        ComplexMat chol() const;
+        ComplexMat cholUpdate(const ComplexMat& m, double a) const;
+        ComplexVec eig() const;
+        ComplexVec eig(ComplexMat& vecs) const;
+        void qr(ComplexMat& q, ComplexMat& r) const;
+        void qr(ComplexMat& q, ComplexMat& r, std::vector<std::size_t>& p)
+            const;
+        ComplexMat trans() const;
+        ComplexVec diag() const;
+        ComplexMat rep(std::size_t m, std::size_t n) const;
+        complex operator()(std::size_t i, std::size_t j) const
+        {
+            if(i >= rows())
+            {
+                throw std::runtime_error("Row index out of range.");
+            }
+            if(j >= cols())
+            {
+                throw std::runtime_error("Column index out of range.");
+            }
+            return _begin[i + rows()*j];
+        }
+        complex operator()(std::size_t i) const
+        {
+            if(i >= size())
+            {
+                throw std::runtime_error("Index is out of range.");
+            }
+            return _begin[i];
+        }
+        std::size_t size() const
+        {
+            return rows()*cols();
+        }
+        std::size_t rows() const
+        {
+            return _begin.blockRows;
+        }
+        std::size_t cols() const
+        {
+            return _blockCols;
+        }
+        bool empty() const
+        {
+            return !rows() || !cols();
+        }
+        const iterator& begin() const
+        {
+            return _begin;
+        }
+        iterator end() const
+        {
+            return _begin + size();
+        }
+        complex normSq() const;
+        complex norm() const;
+        complex sum() const;
+        ComplexVec rowSum() const;
+        ComplexMat colSum() const;
+        complex min() const;
+        complex max() const;
+        ComplexMat normalized() const;
+        ComplexMat prod(const ComplexMatRef& rhs) const; // elementwise
+        ComplexMat quot(const ComplexMatRef& rhs) const; // elementwise
+        ComplexMat operator*(const ComplexMatRef& rhs) const;
+        ComplexMat operator+(const ComplexMatRef& rhs) const;
+        ComplexMat operator-(const ComplexMatRef& rhs) const;
+        ComplexMat operator*(complex rhs) const;
+        ComplexMat operator/(complex rhs) const;
+        ComplexMat operator-() const;
+        complex dot(const ComplexMatRef& rhs) const;
+        ComplexVec cross(const ComplexMatRef& rhs) const;
+        ComplexMatRef block(std::size_t startRow, std::size_t startCol, std::
+            size_t numRows, std::size_t numCols) const;
+        ComplexMatRef row(std::size_t m) const;
+        ComplexMatRef col(std::size_t n) const;
+        bool hasNan() const;
+        Mat real() const;
+        Mat imag() const;
+        Mat abs() const;
+        Mat arg() const;
+        ComplexMat conj() const;
+        ComplexMat conjTrans() const;
+    };
+
+    inline ComplexMatRef::iterator operator+(ComplexMatRef::iterator::
+        difference_type n, const ComplexMatRef::iterator& it)
+    {
+        return it + n;
+    }
+
+    inline ComplexMat operator*(complex lhs, const ComplexMatRef& rhs)
+    {
+        return rhs*lhs;
+    }
+
+    inline bool operator==(const ComplexMatRef& a, const ComplexMatRef& b)
+    {
+        if(a.rows() != b.rows() || a.cols() != b.cols())
+        {
+            return false;
+        }
+        return std::equal(a.begin(), a.end(), b.begin());
+    }
+    inline bool operator!=(const ComplexMatRef& a, const ComplexMatRef& b)
     {
         return !(a == b);
     }
@@ -606,17 +1080,11 @@ namespace paz
     Mat rot2(double angle);
     Mat rot3(double angle);
 
-    std::vector<complex> fft(const std::vector<complex>& timeSamples);
-    std::vector<complex> ifft(const std::vector<complex>& freqSamples);
+    ComplexVec fft(const ComplexMatRef& timeSamples);
+    ComplexVec ifft(const ComplexMatRef& freqSamples);
 
-    std::vector<complex> fftshift(const std::vector<complex>& freqSamples);
-    std::vector<complex> ifftshift(const std::vector<complex>& freqSamples);
-
-    std::vector<double> real(const std::vector<complex>& v);
-    std::vector<double> imag(const std::vector<complex>& v);
-    std::vector<double> abs(const std::vector<complex>& v);
-    std::vector<double> arg(const std::vector<complex>& v);
-    std::vector<complex> conj(const std::vector<complex>& v);
+    ComplexVec fftshift(const ComplexMatRef& freqSamples);
+    ComplexVec ifftshift(const ComplexMatRef& freqSamples);
 }
 
 #endif

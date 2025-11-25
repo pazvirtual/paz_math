@@ -260,3 +260,13 @@ bool paz::MatRef::hasNan() const
     }
     return false;
 }
+
+paz::Mat paz::MatRef::abs() const
+{
+    Mat m(rows(), cols());
+    for(std::size_t i = 0; i < size(); ++i)
+    {
+        m._vals[i] = std::abs(operator()(i));
+    }
+    return m;
+}

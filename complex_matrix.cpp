@@ -4,41 +4,42 @@
 #include <sstream>
 #include <iomanip>
 
-paz::Mat paz::Mat::Constant(std::size_t rows, std::size_t cols, double c)
+paz::ComplexMat paz::ComplexMat::Constant(std::size_t rows, std::size_t cols,
+    complex c)
 {
-    Mat m(rows, cols);
+    ComplexMat m(rows, cols);
     std::fill(m.begin(), m.end(), c);
     return m;
 }
 
-paz::Mat paz::Mat::Constant(std::size_t side, double c)
+paz::ComplexMat paz::ComplexMat::Constant(std::size_t side, complex c)
 {
     return Constant(side, side, c);
 }
 
-paz::Mat paz::Mat::Zero(std::size_t rows, std::size_t cols)
+paz::ComplexMat paz::ComplexMat::Zero(std::size_t rows, std::size_t cols)
 {
     return Constant(rows, cols, 0.);
 }
 
-paz::Mat paz::Mat::Zero(std::size_t side)
+paz::ComplexMat paz::ComplexMat::Zero(std::size_t side)
 {
     return Constant(side, side, 0.);
 }
 
-paz::Mat paz::Mat::Ones(std::size_t rows, std::size_t cols)
+paz::ComplexMat paz::ComplexMat::Ones(std::size_t rows, std::size_t cols)
 {
     return Constant(rows, cols, 1.);
 }
 
-paz::Mat paz::Mat::Ones(std::size_t side)
+paz::ComplexMat paz::ComplexMat::Ones(std::size_t side)
 {
     return Constant(side, side, 1.);
 }
 
-paz::Mat paz::Mat::Identity(std::size_t side)
+paz::ComplexMat paz::ComplexMat::Identity(std::size_t side)
 {
-    Mat m(side, side);
+    ComplexMat m(side, side);
     for(std::size_t i = 0; i < side; ++i)
     {
         for(std::size_t j = 0; j < side; ++j)
@@ -49,9 +50,9 @@ paz::Mat paz::Mat::Identity(std::size_t side)
     return m;
 }
 
-paz::Mat paz::Mat::Diag(const MatRef& vals)
+paz::ComplexMat paz::ComplexMat::Diag(const ComplexMatRef& vals)
 {
-    Mat m = Mat::Zero(vals.size());
+    ComplexMat m = ComplexMat::Zero(vals.size());
     for(std::size_t i = 0; i < vals.size(); ++i)
     {
         m(i, i) = vals(i);
@@ -59,38 +60,41 @@ paz::Mat paz::Mat::Diag(const MatRef& vals)
     return m;
 }
 
-paz::Mat paz::Mat::BlockDiag(const MatRef& a, const MatRef& b)
+paz::ComplexMat paz::ComplexMat::BlockDiag(const ComplexMatRef& a, const
+    ComplexMatRef& b)
 {
-    Mat m = Mat::Zero(a.rows() + b.rows(), a.cols() + b.cols());
+    ComplexMat m = ComplexMat::Zero(a.rows() + b.rows(), a.cols() + b.cols());
     m.setBlock(0, 0, a.rows(), a.cols(), a);
     m.setBlock(a.rows(), a.cols(), b.rows(), b.cols(), b);
     return m;
 }
 
-paz::Mat paz::Mat::Cross(const MatRef& vals)
+paz::ComplexMat paz::ComplexMat::Cross(const ComplexMatRef& vals)
 {
     if(vals.rows() != 3 && vals.cols() != 1)
     {
         throw std::runtime_error("Not a 3-vector.");
     }
-    return Mat{{      0., -vals(2),  vals(1)},
+    return ComplexMat{{      0., -vals(2),  vals(1)},
                { vals(2),       0., -vals(0)},
                {-vals(1),  vals(0),       0.}};
 }
 
-paz::Mat paz::Mat::Hcat(const MatRef& a, const MatRef& b)
+paz::ComplexMat paz::ComplexMat::Hcat(const ComplexMatRef& a, const
+    ComplexMatRef& b)
 {
     if(a.rows() != b.rows())
     {
         throw std::runtime_error("Matrix dimensions do not match.");
     }
-    Mat res(a.rows(), a.cols() + b.cols());
+    ComplexMat res(a.rows(), a.cols() + b.cols());
     std::copy(a.begin(), a.end(), res.begin());
     std::copy(b.begin(), b.end(), res.begin() + a.size());
     return res;
 }
 
-paz::Mat paz::Mat::Vcat(const MatRef& a, const MatRef& b)
+paz::ComplexMat paz::ComplexMat::Vcat(const ComplexMatRef& a, const
+    ComplexMatRef& b)
 {
     const std::size_t cols = a.cols();
     if(cols != b.cols())
@@ -98,7 +102,7 @@ paz::Mat paz::Mat::Vcat(const MatRef& a, const MatRef& b)
         throw std::runtime_error("Matrix dimensions do not match.");
     }
     const std::size_t rows = a.rows() + b.rows();
-    Mat res(rows, cols);
+    ComplexMat res(rows, cols);
     for(std::size_t i = 0; i < cols; ++i)
     {
         std::copy(a.begin() + a.rows()*i, a.begin() + a.rows()*(i + 1), res.
@@ -109,9 +113,9 @@ paz::Mat paz::Mat::Vcat(const MatRef& a, const MatRef& b)
     return res;
 }
 
-paz::Mat paz::Mat::Randn(std::size_t rows, std::size_t cols)
+paz::ComplexMat paz::ComplexMat::Randn(std::size_t rows, std::size_t cols)
 {
-    Mat m(rows, cols);
+    ComplexMat m(rows, cols);
     for(auto& n : m)
     {
         n = randn();
@@ -119,25 +123,27 @@ paz::Mat paz::Mat::Randn(std::size_t rows, std::size_t cols)
     return m;
 }
 
-paz::Mat paz::Mat::Randn(std::size_t side)
+paz::ComplexMat paz::ComplexMat::Randn(std::size_t side)
 {
-    return Mat::Randn(side, side);
+    return ComplexMat::Randn(side, side);
 }
 
-paz::Mat::Mat(std::size_t rows, std::size_t cols) : _vals(rows*cols), _rows(
-    rows), _cols(cols) {}
+paz::ComplexMat::ComplexMat(std::size_t rows, std::size_t cols) : _vals(rows*
+    cols), _rows(rows), _cols(cols) {}
 
-paz::Mat::Mat(std::size_t side) : Mat(side, side) {}
+paz::ComplexMat::ComplexMat(std::size_t side) : ComplexMat(side, side) {}
 
-paz::Mat::Mat(const Vec& v) : _vals(v._vals), _rows(v.rows()), _cols(1) {}
+paz::ComplexMat::ComplexMat(const ComplexVec& v) : _vals(v._vals), _rows(v.
+    rows()), _cols(1) {}
 
-paz::Mat::Mat(const MatRef& m) : Mat(m.rows(), m.cols())
+paz::ComplexMat::ComplexMat(const ComplexMatRef& m) : ComplexMat(m.rows(), m.
+    cols())
 {
     std::copy(m.begin(), m.end(), _vals.begin());
 }
 
-paz::Mat::Mat(const std::initializer_list<std::initializer_list<double>>& list)
-    : _rows(list.size())
+paz::ComplexMat::ComplexMat(const std::initializer_list<std::initializer_list<
+    complex>>& list) : _rows(list.size())
 {
     if(!_rows)
     {
@@ -158,17 +164,17 @@ paz::Mat::Mat(const std::initializer_list<std::initializer_list<double>>& list)
     }
 }
 
-double paz::Mat::det() const
+paz::complex paz::ComplexMat::det() const
 {
     if(rows() != cols() || empty())
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXcd> m(data(), rows(), cols());
     return m.determinant();
 }
 
-paz::Mat paz::Mat::inv() const
+paz::ComplexMat paz::ComplexMat::inv() const
 {
     if(rows() != cols())
     {
@@ -178,13 +184,13 @@ paz::Mat paz::Mat::inv() const
     {
         return *this;
     }
-    Mat res = *this;
-    Eigen::Map<Eigen::MatrixXd> m(res.data(), rows(), cols());
+    ComplexMat res = *this;
+    Eigen::Map<Eigen::MatrixXcd> m(res.data(), rows(), cols());
     m = m.inverse().eval();
     return res;
 }
 
-paz::Mat paz::Mat::solve(const Mat& b) const //TEMP - not `MatRef` to support `Eigen::Map`
+paz::ComplexMat paz::ComplexMat::solve(const ComplexMat& b) const //TEMP - not `ComplexMatRef` to support `Eigen::Map`
 {
     if(rows() != b.rows())
     {
@@ -194,15 +200,15 @@ paz::Mat paz::Mat::solve(const Mat& b) const //TEMP - not `MatRef` to support `E
     {
         return *this;
     }
-    Eigen::Map<const Eigen::MatrixXd> eigenA(data(), rows(), cols());
-    Eigen::Map<const Eigen::MatrixXd> eigenB(b.data(), b.rows(), b.cols());
-    Mat x(cols(), b.cols());
-    Eigen::Map<Eigen::MatrixXd> eigenX(x.data(), x.rows(), x.cols());
+    Eigen::Map<const Eigen::MatrixXcd> eigenA(data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXcd> eigenB(b.data(), b.rows(), b.cols());
+    ComplexMat x(cols(), b.cols());
+    Eigen::Map<Eigen::MatrixXcd> eigenX(x.data(), x.rows(), x.cols());
     eigenX = eigenA.colPivHouseholderQr().solve(eigenB);
     return x;
 }
 
-paz::Mat paz::Mat::chol() const
+paz::ComplexMat paz::ComplexMat::chol() const
 {
     if(empty())
     {
@@ -212,23 +218,23 @@ paz::Mat paz::Mat::chol() const
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXcd> m(data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
     }
-    Eigen::LLT<Eigen::MatrixXd> llt(m);
+    Eigen::LLT<Eigen::MatrixXcd> llt(m);
     if(llt.info() != Eigen::Success)
     {
         throw std::runtime_error("Cholesky decomposition failed.");
     }
-    Mat res(rows(), cols());
-    Eigen::Map<Eigen::MatrixXd> lMat(res.data(), rows(), cols());
+    ComplexMat res(rows(), cols());
+    Eigen::Map<Eigen::MatrixXcd> lMat(res.data(), rows(), cols());
     lMat = llt.matrixL();
     return res;
 }
 
-paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const //TEMP - not `MatRef` to support `Eigen::Map`
+paz::ComplexMat paz::ComplexMat::cholUpdate(const ComplexMat& m, double a) const //TEMP - not `ComplexMatRef` to support `Eigen::Map`
 {
     if(empty())
     {
@@ -242,14 +248,14 @@ paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const //TEMP - not `MatRef
     {
         throw std::logic_error("Matrices must have the same number of rows.");
     }
-    Eigen::Map<const Eigen::MatrixXd> l(data(), rows(), cols());
-    Eigen::Map<const Eigen::MatrixXd> eigenM(m.data(), m.rows(), m.cols());
+    Eigen::Map<const Eigen::MatrixXcd> l(data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXcd> eigenM(m.data(), m.rows(), m.cols());
     if(l.hasNaN() || eigenM.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
     }
-    Eigen::LLT<Eigen::MatrixXd> llt(Eigen::MatrixXd{});
-    const_cast<Eigen::MatrixXd&>(llt.matrixLLT()) = l;
+    Eigen::LLT<Eigen::MatrixXcd> llt(Eigen::MatrixXcd{});
+    const_cast<Eigen::MatrixXcd&>(llt.matrixLLT()) = l;
     for(std::size_t i = 0; i < m.cols(); ++i)
     {
         if(a < 0.)
@@ -265,13 +271,13 @@ paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const //TEMP - not `MatRef
             throw std::runtime_error("Cholesky update failed.");
         }
     }
-    Mat res(rows(), cols());
-    Eigen::Map<Eigen::MatrixXd> lMat(res.data(), rows(), cols());
+    ComplexMat res(rows(), cols());
+    Eigen::Map<Eigen::MatrixXcd> lMat(res.data(), rows(), cols());
     lMat = llt.matrixL();
     return res;
 }
 
-paz::Vec paz::Mat::eig() const
+paz::ComplexVec paz::ComplexMat::eig() const
 {
     if(empty())
     {
@@ -281,26 +287,25 @@ paz::Vec paz::Mat::eig() const
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXcd> m(data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
     }
-    Eigen::EigenSolver<Eigen::MatrixXd> eig(m);
+    Eigen::ComplexEigenSolver<Eigen::MatrixXcd> eig(m);
     if(eig.info() != Eigen::Success)
     {
         throw std::runtime_error("Eigendecomposition failed.");
     }
-    Vec vals(rows());
+    ComplexVec vals(rows());
     for(std::size_t i = 0; i < rows(); ++i)
     {
-        vals(i) = eig.eigenvalues()(i).imag() ? nan() : eig.eigenvalues()(i). //TEMP
-            real();
+        vals(i) = eig.eigenvalues()(i);
     }
     return vals;
 }
 
-paz::Vec paz::Mat::eig(Mat& vecs) const
+paz::ComplexVec paz::ComplexMat::eig(ComplexMat& vecs) const
 {
     if(empty())
     {
@@ -311,35 +316,34 @@ paz::Vec paz::Mat::eig(Mat& vecs) const
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXcd> m(data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
     }
-    Eigen::EigenSolver<Eigen::MatrixXd> eig(m);
+    Eigen::ComplexEigenSolver<Eigen::MatrixXcd> eig(m);
     if(eig.info() != Eigen::Success)
     {
         throw std::runtime_error("Eigendecomposition failed.");
     }
-    Vec vals(rows());
+    ComplexVec vals(rows());
     for(std::size_t i = 0; i < rows(); ++i)
     {
         vals(i) = eig.eigenvalues()(i).imag() ? nan() : eig.eigenvalues()(i). //TEMP
             real();
     }
-    vecs = Mat(rows(), cols());
+    vecs = ComplexMat(rows(), cols());
     for(std::size_t i = 0; i < rows(); ++i)
     {
         for(std::size_t j = 0; j < cols(); ++j)
         {
-            vecs(i, j) = eig.eigenvectors()(i, j).imag() ? nan() : eig. //TEMP
-                eigenvectors()(i, j).real();
+            vecs(i, j) = eig.eigenvectors()(i, j);
         }
     }
     return vals;
 }
 
-void paz::Mat::qr(Mat& q, Mat& r) const //TEMP - not `MatRef` to support `Eigen::Map`
+void paz::ComplexMat::qr(ComplexMat& q, ComplexMat& r) const //TEMP - not `ComplexMatRef` to support `Eigen::Map`
 {
     if(empty())
     {
@@ -347,21 +351,22 @@ void paz::Mat::qr(Mat& q, Mat& r) const //TEMP - not `MatRef` to support `Eigen:
         r = {};
         return;
     }
-    Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXcd> m(data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
     }
-    Eigen::HouseholderQR<Eigen::MatrixXd> qr(m);
+    Eigen::HouseholderQR<Eigen::MatrixXcd> qr(m);
     q.resize(rows(), rows());
-    Eigen::Map<Eigen::MatrixXd> eigenQ(q.data(), q.rows(), q.cols());
+    Eigen::Map<Eigen::MatrixXcd> eigenQ(q.data(), q.rows(), q.cols());
     eigenQ = qr.householderQ();
     r.resize(rows(), cols());
-    Eigen::Map<Eigen::MatrixXd> eigenR(r.data(), r.rows(), r.cols());
+    Eigen::Map<Eigen::MatrixXcd> eigenR(r.data(), r.rows(), r.cols());
     eigenR = qr.matrixQR().triangularView<Eigen::Upper>();
 }
 
-void paz::Mat::qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const //TEMP - not `MatRef` to support `Eigen::Map`
+void paz::ComplexMat::qr(ComplexMat& q, ComplexMat& r, std::vector<std::size_t>&
+    p) const //TEMP - not `ComplexMatRef` to support `Eigen::Map`
 {
     if(empty())
     {
@@ -370,24 +375,24 @@ void paz::Mat::qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const //TEMP - no
         p = {};
         return;
     }
-    Eigen::Map<const Eigen::MatrixXd> m(data(), rows(), cols());
+    Eigen::Map<const Eigen::MatrixXcd> m(data(), rows(), cols());
     if(m.hasNaN())
     {
         throw std::runtime_error("Matrix contains NaN.");
     }
-    Eigen::ColPivHouseholderQR<Eigen::MatrixXd> qr(m);
+    Eigen::ColPivHouseholderQR<Eigen::MatrixXcd> qr(m);
     q.resize(rows(), rows());
-    Eigen::Map<Eigen::MatrixXd> eigenQ(q.data(), q.rows(), q.cols());
+    Eigen::Map<Eigen::MatrixXcd> eigenQ(q.data(), q.rows(), q.cols());
     eigenQ = qr.householderQ();
     r.resize(rows(), cols());
-    Eigen::Map<Eigen::MatrixXd> eigenR(r.data(), r.rows(), r.cols());
+    Eigen::Map<Eigen::MatrixXcd> eigenR(r.data(), r.rows(), r.cols());
     eigenR = qr.matrixQR().triangularView<Eigen::Upper>();
     p.resize(cols());
     std::copy(qr.colsPermutation().indices().begin(), qr.colsPermutation().
         indices().end(), p.begin());
 }
 
-paz::Mat paz::Mat::trans() const
+paz::ComplexMat paz::ComplexMat::trans() const
 {
     if(empty())
     {
@@ -407,7 +412,7 @@ paz::Mat paz::Mat::trans() const
         res._cols = res.size();
         return res;
     }
-    Mat res(cols(), rows());
+    ComplexMat res(cols(), rows());
     for(std::size_t i = 0; i < _rows; ++i)
     {
         for(std::size_t j = 0; j < res._rows; ++j)
@@ -418,13 +423,13 @@ paz::Mat paz::Mat::trans() const
     return res;
 }
 
-paz::Vec paz::Mat::diag() const
+paz::ComplexVec paz::ComplexMat::diag() const
 {
     if(rows() != cols() || empty())
     {
         throw std::runtime_error("Matrix must be square.");
     }
-    Vec res(_rows);
+    ComplexVec res(_rows);
     for(std::size_t i = 0; i < _rows; ++i)
     {
         res(i) = _vals[i + _rows*i];
@@ -432,9 +437,9 @@ paz::Vec paz::Mat::diag() const
     return res;
 }
 
-paz::Mat paz::Mat::rep(std::size_t m, std::size_t n) const
+paz::ComplexMat paz::ComplexMat::rep(std::size_t m, std::size_t n) const
 {
-    Mat res(m*rows(), n*cols());
+    ComplexMat res(m*rows(), n*cols());
     for(std::size_t i = 0; i < m*n; ++i)
     {
         std::copy(begin(), end(), res.begin() + rows()*cols()*i);
@@ -442,24 +447,24 @@ paz::Mat paz::Mat::rep(std::size_t m, std::size_t n) const
     return res;
 }
 
-double paz::Mat::normSq() const
+paz::complex paz::ComplexMat::normSq() const
 {
     return dot(*this);
 }
 
-double paz::Mat::norm() const
+paz::complex paz::ComplexMat::norm() const
 {
     return std::sqrt(normSq());
 }
 
-double paz::Mat::sum() const
+paz::complex paz::ComplexMat::sum() const
 {
-    return std::accumulate(begin(), end(), 0.);
+    return std::accumulate(begin(), end(), complex{0.});
 }
 
-paz::Vec paz::Mat::rowSum() const
+paz::ComplexVec paz::ComplexMat::rowSum() const
 {
-    Vec res = Vec::Zero(rows());
+    ComplexVec res = ComplexVec::Zero(rows());
     for(std::size_t i = 0; i < rows(); ++i)
     {
         for(std::size_t j = 0; j < cols(); ++j)
@@ -470,9 +475,9 @@ paz::Vec paz::Mat::rowSum() const
     return res;
 }
 
-paz::Mat paz::Mat::colSum() const
+paz::ComplexMat paz::ComplexMat::colSum() const
 {
-    Mat res = Mat::Zero(1, cols());
+    ComplexMat res = ComplexMat::Zero(1, cols());
     for(std::size_t i = 0; i < cols(); ++i)
     {
         for(std::size_t j = 0; j < rows(); ++j)
@@ -483,22 +488,24 @@ paz::Mat paz::Mat::colSum() const
     return res;
 }
 
-double paz::Mat::min() const
+paz::complex paz::ComplexMat::min() const
 {
-    return *std::min_element(begin(), end());
+    return *std::min_element(begin(), end(), [](complex a, complex b){ return
+        std::abs(a) < std::abs(b); });
 }
 
-double paz::Mat::max() const
+paz::complex paz::ComplexMat::max() const
 {
-    return *std::max_element(begin(), end());
+    return *std::max_element(begin(), end(), [](complex a, complex b){ return
+        std::abs(a) > std::abs(b); });
 }
 
-paz::Mat paz::Mat::normalized() const
+paz::ComplexMat paz::ComplexMat::normalized() const
 {
     return (*this)/norm();
 }
 
-paz::Mat paz::Mat::prod(const MatRef& rhs) const
+paz::ComplexMat paz::ComplexMat::prod(const ComplexMatRef& rhs) const
 {
     if(rows() != rhs.rows() || cols() != rhs.cols())
     {
@@ -512,7 +519,7 @@ paz::Mat paz::Mat::prod(const MatRef& rhs) const
     return res;
 }
 
-paz::Mat paz::Mat::quot(const MatRef& rhs) const
+paz::ComplexMat paz::ComplexMat::quot(const ComplexMatRef& rhs) const
 {
     if(rows() != rhs.rows() || cols() != rhs.cols())
     {
@@ -526,18 +533,18 @@ paz::Mat paz::Mat::quot(const MatRef& rhs) const
     return res;
 }
 
-paz::Mat& paz::Mat::operator*=(const MatRef& rhs)
+paz::ComplexMat& paz::ComplexMat::operator*=(const ComplexMatRef& rhs)
 {
     return *this = (*this)*rhs;
 }
 
-paz::Mat paz::Mat::operator*(const MatRef& rhs) const
+paz::ComplexMat paz::ComplexMat::operator*(const ComplexMatRef& rhs) const
 {
     if(cols() != rhs.rows())
     {
         throw std::runtime_error("Matrix dimensions do not match.");
     }
-    Mat res(rows(), rhs.cols());
+    ComplexMat res(rows(), rhs.cols());
     std::fill(res.begin(), res.end(), 0.);
     for(std::size_t i = 0; i < rows(); ++i)
     {
@@ -552,7 +559,7 @@ paz::Mat paz::Mat::operator*(const MatRef& rhs) const
     return res;
 }
 
-paz::Mat& paz::Mat::operator+=(const MatRef& rhs)
+paz::ComplexMat& paz::ComplexMat::operator+=(const ComplexMatRef& rhs)
 {
     if(rows() != rhs.rows() || cols() != rhs.cols())
     {
@@ -565,13 +572,13 @@ paz::Mat& paz::Mat::operator+=(const MatRef& rhs)
     return *this;
 }
 
-paz::Mat paz::Mat::operator+(const MatRef& rhs) const
+paz::ComplexMat paz::ComplexMat::operator+(const ComplexMatRef& rhs) const
 {
     auto res = *this;
     return res += rhs;
 }
 
-paz::Mat& paz::Mat::operator-=(const MatRef& rhs)
+paz::ComplexMat& paz::ComplexMat::operator-=(const ComplexMatRef& rhs)
 {
     if(rows() != rhs.rows() || cols() != rhs.cols())
     {
@@ -584,13 +591,13 @@ paz::Mat& paz::Mat::operator-=(const MatRef& rhs)
     return *this;
 }
 
-double paz::Mat::dot(const MatRef& rhs) const
+paz::complex paz::ComplexMat::dot(const ComplexMatRef& rhs) const
 {
     if(rows() != rhs.rows() || cols() != rhs.cols())
     {
         throw std::runtime_error("Matrices must have the same dimensions.");
     }
-    double res = 0.;
+    complex res = 0.;
     for(std::size_t i = 0; i < size(); ++i)
     {
         res += _vals[i]*rhs(i);
@@ -598,7 +605,7 @@ double paz::Mat::dot(const MatRef& rhs) const
     return res;
 }
 
-paz::Vec paz::Mat::cross(const MatRef& rhs) const
+paz::ComplexVec paz::ComplexMat::cross(const ComplexMatRef& rhs) const
 {
     if(rows() != 3 || cols() != 1 || rhs.rows() != 3 || rhs.cols() != 1)
     {
@@ -609,13 +616,13 @@ paz::Vec paz::Mat::cross(const MatRef& rhs) const
              operator()(0)*rhs(1) - operator()(1)*rhs(0)}};
 }
 
-paz::Mat paz::Mat::operator-(const MatRef& rhs) const
+paz::ComplexMat paz::ComplexMat::operator-(const ComplexMatRef& rhs) const
 {
     auto res = *this;
     return res -= rhs;
 }
 
-paz::Mat& paz::Mat::operator*=(double rhs)
+paz::ComplexMat& paz::ComplexMat::operator*=(complex rhs)
 {
     for(auto& n : _vals)
     {
@@ -624,13 +631,13 @@ paz::Mat& paz::Mat::operator*=(double rhs)
     return *this;
 }
 
-paz::Mat paz::Mat::operator*(double rhs) const
+paz::ComplexMat paz::ComplexMat::operator*(complex rhs) const
 {
     auto res = *this;
     return res *= rhs;
 }
 
-paz::Mat& paz::Mat::operator/=(double rhs)
+paz::ComplexMat& paz::ComplexMat::operator/=(complex rhs)
 {
     for(auto& n : _vals)
     {
@@ -639,13 +646,13 @@ paz::Mat& paz::Mat::operator/=(double rhs)
     return *this;
 }
 
-paz::Mat paz::Mat::operator/(double rhs) const
+paz::ComplexMat paz::ComplexMat::operator/(complex rhs) const
 {
     auto res = *this;
     return res /= rhs;
 }
 
-paz::Mat paz::Mat::operator-() const
+paz::ComplexMat paz::ComplexMat::operator-() const
 {
     auto res = *this;
     for(auto& n : res._vals)
@@ -655,19 +662,19 @@ paz::Mat paz::Mat::operator-() const
     return res;
 }
 
-paz::MatRef paz::Mat::block(std::size_t startRow, std::size_t startCol, std::
-    size_t numRows, std::size_t numCols) const
+paz::ComplexMatRef paz::ComplexMat::block(std::size_t startRow, std::size_t
+    startCol, std::size_t numRows, std::size_t numCols) const
 {
     if(startRow + numRows > rows() || startCol + numCols > cols())
     {
         throw std::runtime_error("Block is out of range.");
     }
-    return MatRef(data() + startRow + rows()*startCol, rows(), cols(), numRows,
-        numCols);
+    return ComplexMatRef(data() + startRow + rows()*startCol, rows(), cols(),
+        numRows, numCols);
 }
 
-void paz::Mat::setBlock(std::size_t startRow, std::size_t startCol, std::
-    size_t numRows, std::size_t numCols, const MatRef& rhs)
+void paz::ComplexMat::setBlock(std::size_t startRow, std::size_t startCol, std::
+    size_t numRows, std::size_t numCols, const ComplexMatRef& rhs)
 {
     if(startRow + numRows > rows() || startCol + numCols > cols())
     {
@@ -686,12 +693,12 @@ void paz::Mat::setBlock(std::size_t startRow, std::size_t startCol, std::
     }
 }
 
-paz::MatRef paz::Mat::row(std::size_t m) const
+paz::ComplexMatRef paz::ComplexMat::row(std::size_t m) const
 {
     return block(m, 0, 1, _cols);
 }
 
-void paz::Mat::setRow(std::size_t m, const MatRef& rhs)
+void paz::ComplexMat::setRow(std::size_t m, const ComplexMatRef& rhs)
 {
     if(rhs.rows() != 1 || rhs.cols() != cols())
     {
@@ -703,12 +710,12 @@ void paz::Mat::setRow(std::size_t m, const MatRef& rhs)
     }
 }
 
-paz::MatRef paz::Mat::col(std::size_t n) const
+paz::ComplexMatRef paz::ComplexMat::col(std::size_t n) const
 {
     return block(0, n, _rows, 1);
 }
 
-void paz::Mat::setCol(std::size_t n, const MatRef& rhs)
+void paz::ComplexMat::setCol(std::size_t n, const ComplexMatRef& rhs)
 {
     if(rhs.rows() != rows() || rhs.cols() != 1)
     {
@@ -720,13 +727,13 @@ void paz::Mat::setCol(std::size_t n, const MatRef& rhs)
     }
 }
 
-void paz::Mat::resize(std::size_t newRows, std::size_t newCols)
+void paz::ComplexMat::resize(std::size_t newRows, std::size_t newCols)
 {
     resizeRows(newRows);
     resizeCols(newCols);
 }
 
-void paz::Mat::resizeRows(std::size_t newRows)
+void paz::ComplexMat::resizeRows(std::size_t newRows)
 {
     if(newRows == _rows)
     {
@@ -738,7 +745,7 @@ void paz::Mat::resizeRows(std::size_t newRows)
     }
     else
     {
-        std::vector<double> newVals(newRows*_cols);
+        std::vector<complex> newVals(newRows*_cols);
         const std::size_t copyRows = std::min(newRows, _rows);
         for(std::size_t i = 0; i < _cols; ++i)
         {
@@ -750,7 +757,7 @@ void paz::Mat::resizeRows(std::size_t newRows)
     _rows = newRows;
 }
 
-void paz::Mat::resizeCols(std::size_t newCols)
+void paz::ComplexMat::resizeCols(std::size_t newCols)
 {
     if(newCols == _cols)
     {
@@ -760,11 +767,11 @@ void paz::Mat::resizeCols(std::size_t newCols)
     _cols = newCols;
 }
 
-bool paz::Mat::hasNan() const
+bool paz::ComplexMat::hasNan() const
 {
     for(auto n : _vals)
     {
-        if(std::isnan(n))
+        if(std::isnan(n.real()) || std::isnan(n.imag()))
         {
             return true;
         }
@@ -772,14 +779,14 @@ bool paz::Mat::hasNan() const
     return false;
 }
 
-void paz::Mat::shuffleCols()
+void paz::ComplexMat::shuffleCols()
 {
     if(!rows() || cols() < 2)
     {
         return;
     }
     const auto seq = rand_seq(cols());
-    std::vector<double> newVals(rows()*cols());
+    std::vector<complex> newVals(rows()*cols());
     for(std::size_t i = 0; i < cols(); ++i)
     {
         std::copy(begin() + _rows*i, begin() + _rows*(i + 1), newVals.begin() +
@@ -788,7 +795,27 @@ void paz::Mat::shuffleCols()
     swap(newVals, _vals);
 }
 
-paz::Mat paz::Mat::abs() const
+paz::Mat paz::ComplexMat::real() const
+{
+    Mat m(_rows, _cols);
+    for(std::size_t i = 0; i < _vals.size(); ++i)
+    {
+        m._vals[i] = _vals[i].real();
+    }
+    return m;
+}
+
+paz::Mat paz::ComplexMat::imag() const
+{
+    Mat m(_rows, _cols);
+    for(std::size_t i = 0; i < _vals.size(); ++i)
+    {
+        m._vals[i] = _vals[i].imag();
+    }
+    return m;
+}
+
+paz::Mat paz::ComplexMat::abs() const
 {
     Mat m(_rows, _cols);
     for(std::size_t i = 0; i < _vals.size(); ++i)
@@ -798,7 +825,58 @@ paz::Mat paz::Mat::abs() const
     return m;
 }
 
-std::ostream& paz::operator<<(std::ostream& out, const MatRef& rhs)
+paz::Mat paz::ComplexMat::arg() const
+{
+    Mat m(_rows, _cols);
+    for(std::size_t i = 0; i < _vals.size(); ++i)
+    {
+        m._vals[i] = std::arg(_vals[i]);
+    }
+    return m;
+}
+
+paz::ComplexMat paz::ComplexMat::conj() const
+{
+    ComplexMat m(_rows, _cols);
+    for(std::size_t i = 0; i < _vals.size(); ++i)
+    {
+        m._vals[i] = std::conj(_vals[i]);
+    }
+    return m;
+}
+
+paz::ComplexMat paz::ComplexMat::conjTrans() const
+{
+    if(empty())
+    {
+        return *this;
+    }
+    if(rows() == 1)
+    {
+        auto res = conj();
+        res._rows = res.size();
+        res._cols = 1;
+        return res;
+    }
+    if(cols() == 1)
+    {
+        auto res = conj();
+        res._rows = 1;
+        res._cols = res.size();
+        return res;
+    }
+    ComplexMat res(cols(), rows());
+    for(std::size_t i = 0; i < _rows; ++i)
+    {
+        for(std::size_t j = 0; j < res._rows; ++j)
+        {
+            res._vals[j + res._rows*i] = std::conj(_vals[i + _rows*j]);
+        }
+    }
+    return res;
+}
+
+std::ostream& paz::operator<<(std::ostream& out, const ComplexMatRef& rhs)
 {
     if(!rhs.empty())
     {

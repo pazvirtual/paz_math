@@ -1,10 +1,9 @@
 #include "PAZ_Math"
 #include <cstdint>
 
-static void fft_internal(std::vector<paz::complex>& samples, bool invert)
+static void fft_internal(paz::complex* samples, std::size_t numSamples, bool
+    invert)
 {
-    const std::size_t numSamples = samples.size();
-
     if(numSamples < 2)
     {
         return;
@@ -15,14 +14,14 @@ static void fft_internal(std::vector<paz::complex>& samples, bool invert)
     {
         evens[i] = samples[2*i];
     }
-    fft_internal(evens, invert);
+    fft_internal(evens.data(), evens.size(), invert);
 
     std::vector<paz::complex> odds(numSamples/2);
     for(std::size_t i = 0; i < numSamples/2; ++i)
     {
         odds[i] = samples[2*i + 1];
     }
-    fft_internal(odds, invert);
+    fft_internal(odds.data(), odds.size(), invert);
 
     const double angle = (invert ? -1. : 1.)*paz::TwoPi/numSamples;
     const paz::complex t0 = {std::cos(angle), std::sin(angle)};
@@ -57,8 +56,13 @@ static std::uint64_t next_pow2(std::uint64_t x)
     return x;
 }
 
-std::vector<paz::complex> paz::fft(const std::vector<complex>& timeSamples)
+paz::ComplexVec paz::fft(const ComplexMatRef& timeSamples)
 {
+    if(timeSamples.rows() != 1 && timeSamples.cols() != 1)
+    {
+        throw std::runtime_error("Not a vector.");
+    }
+
     std::size_t numSamples = timeSamples.size();
 
     if(numSamples < 2)
@@ -66,7 +70,7 @@ std::vector<paz::complex> paz::fft(const std::vector<complex>& timeSamples)
         return timeSamples;
     }
 
-    std::vector<complex> freqSamples = timeSamples;
+    ComplexVec freqSamples = timeSamples;
 
     const std::size_t paddedSize = next_pow2(numSamples);
     if(numSamples != paddedSize)
@@ -74,15 +78,20 @@ std::vector<paz::complex> paz::fft(const std::vector<complex>& timeSamples)
         throw std::logic_error("Non-power-of-two not implemented.");
     }
 
-    fft_internal(freqSamples, false);
+    fft_internal(freqSamples.data(), numSamples, false);
 
     std::reverse(freqSamples.begin() + 1, freqSamples.end());
 
     return freqSamples;
 }
 
-std::vector<paz::complex> paz::ifft(const std::vector<complex>& freqSamples)
+paz::ComplexVec paz::ifft(const ComplexMatRef& freqSamples)
 {
+    if(freqSamples.rows() != 1 && freqSamples.cols() != 1)
+    {
+        throw std::runtime_error("Not a vector.");
+    }
+
     std::size_t numSamples = freqSamples.size();
 
     if(numSamples < 2)
@@ -90,7 +99,7 @@ std::vector<paz::complex> paz::ifft(const std::vector<complex>& freqSamples)
         return freqSamples;
     }
 
-    std::vector<complex> timeSamples = freqSamples;
+    ComplexVec timeSamples = freqSamples;
 
     const std::size_t paddedSize = next_pow2(numSamples);
     if(numSamples != paddedSize)
@@ -100,30 +109,39 @@ std::vector<paz::complex> paz::ifft(const std::vector<complex>& freqSamples)
 
     std::reverse(timeSamples.begin() + 1, timeSamples.end());
 
-    fft_internal(timeSamples, true);
+    fft_internal(timeSamples.data(), numSamples, true);
 
     return timeSamples;
 }
 
-std::vector<paz::complex> paz::fftshift(const std::vector<complex>& freqSamples)
+paz::ComplexVec paz::fftshift(const ComplexMatRef& freqSamples)
 {
+    if(freqSamples.rows() != 1 || freqSamples.cols() != 1)
+    {
+        throw std::runtime_error("Not a vector.");
+    }
+
     const std::size_t numSamples = freqSamples.size();
-    std::vector<complex> res(numSamples);
+    ComplexVec res(numSamples);
     for(std::size_t i = 0; i < numSamples; ++i)
     {
-        res[i] = freqSamples[(i + (numSamples + 1)/2)%numSamples];
+        res(i) = freqSamples((i + (numSamples + 1)/2)%numSamples);
     }
     return res;
 }
 
-std::vector<paz::complex> paz::ifftshift(const std::vector<complex>&
-    freqSamples)
+paz::ComplexVec paz::ifftshift(const ComplexMatRef& freqSamples)
 {
+    if(freqSamples.rows() != 1 || freqSamples.cols() != 1)
+    {
+        throw std::runtime_error("Not a vector.");
+    }
+
     const std::size_t numSamples = freqSamples.size();
-    std::vector<complex> res(numSamples);
+    ComplexVec res(numSamples);
     for(std::size_t i = 0; i < numSamples; ++i)
     {
-        res[i] = freqSamples[(i + numSamples/2)%numSamples];
+        res(i) = freqSamples((i + numSamples/2)%numSamples);
     }
     return res;
 }
