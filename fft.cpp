@@ -116,7 +116,7 @@ paz::ComplexVec paz::ifft(const ComplexMatRef& freqSamples)
 
 paz::ComplexVec paz::fftshift(const ComplexMatRef& freqSamples)
 {
-    if(freqSamples.rows() != 1 || freqSamples.cols() != 1)
+    if(freqSamples.rows() != 1 && freqSamples.cols() != 1)
     {
         throw std::runtime_error("Not a vector.");
     }
@@ -132,7 +132,7 @@ paz::ComplexVec paz::fftshift(const ComplexMatRef& freqSamples)
 
 paz::ComplexVec paz::ifftshift(const ComplexMatRef& freqSamples)
 {
-    if(freqSamples.rows() != 1 || freqSamples.cols() != 1)
+    if(freqSamples.rows() != 1 && freqSamples.cols() != 1)
     {
         throw std::runtime_error("Not a vector.");
     }
