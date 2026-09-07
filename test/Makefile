@@ -3,12 +3,17 @@ MINMACOSVER := 10.12
 
 ifeq ($(OS), Windows_NT)
     OSPRETTY := Windows
-    ifneq ($(MSYSTEM), CLANG64)
+    ifeq ($(MSYSTEM), UCRT64)
+        CC := gcc
+        CXX := g++
+        LIBPATH := /ucrt64/lib
+    else ifeq ($(MSYSTEM), CLANG64)
+        CC := clang
+        CXX := clang++
+        LIBPATH := /clang64/lib
+    else
         $(error Unsupported Windows environment.)
     endif
-    CC := clang
-    CXX := clang++
-    LIBPATH := /clang64/lib
 else
     ifeq ($(shell uname -s), Darwin)
         OSPRETTY := macOS
@@ -31,7 +36,7 @@ endif
 CXXFLAGS += -I..
 LDLIBS := ../libpazmath.a
 ifeq ($(OSPRETTY), Windows)
-    LDFLAGS += -static-libgcc -static-libstdc++
+    LDFLAGS += -static
 endif
 
 SRC := $(wildcard *.cpp)
