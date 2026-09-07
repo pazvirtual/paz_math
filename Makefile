@@ -83,9 +83,6 @@ test: lib$(LIBNAME).a
 %_x86_64.o: %.cpp
 	$(CXX) -arch x86_64 -c -o $@ $< $(CXXFLAGS)
 
-%.o: %.cpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
-
 clean:
 	$(RM) *.o *.a
 	$(MAKE) -C test clean
