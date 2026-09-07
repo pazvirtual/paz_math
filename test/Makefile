@@ -2,23 +2,31 @@ CXXVER := 17
 MINMACOSVER := 10.12
 
 ifeq ($(OS), Windows_NT)
-    LIBPATH := /mingw64/lib
     OSPRETTY := Windows
+    ifneq ($(MSYSTEM), CLANG64)
+        $(error Unsupported Windows environment.)
+    endif
+    CC := clang
+    CXX := clang++
+    LIBPATH := /clang64/lib
 else
     ifeq ($(shell uname -s), Darwin)
         OSPRETTY := macOS
+        CC := clang
+        CXX := clang++
     else
         OSPRETTY := Linux
+        CC := gcc
+        CXX := g++
     endif
     LIBPATH := /usr/local/lib
 endif
 CXXFLAGS := -std=c++$(CXXVER) -O3 -Wall -Wextra -Wno-missing-braces -Wold-style-cast
 ifeq ($(OSPRETTY), macOS)
-    CXXFLAGS += -mmacosx-version-min=$(MINMACOSVER) -Wunguarded-availability -Wno-string-plus-int
-else
-    ifeq ($(OSPRETTY), Windows)
-        CXXFLAGS += -Wno-deprecated-copy
-    endif
+    CXXFLAGS += -mmacosx-version-min=$(MINMACOSVER) -Wunguarded-availability
+endif
+ifeq ($(CC), clang)
+    CXXFLAGS += -Wno-string-plus-int
 endif
 CXXFLAGS += -I..
 LDLIBS := ../libpazmath.a
@@ -29,7 +37,7 @@ endif
 SRC := $(wildcard *.cpp)
 EXE := $(SRC:.cpp=)
 
-print-% : ; @echo $* = $($*)
+print-% : ; @echo "$* = $($*)"
 
 .PHONY: $(SRC)
 
