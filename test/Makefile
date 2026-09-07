@@ -36,7 +36,11 @@ endif
 CXXFLAGS += -I..
 LDLIBS := ../libpazmath.a
 ifeq ($(OSPRETTY), Windows)
-    LDFLAGS += -static
+    ifeq ($(CC), gcc)
+        LDLIBS += -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic
+    else
+        LDLIBS += -Wl,-Bstatic -lc++ -Wl,-Bdynamic
+    endif
 endif
 
 SRC := $(wildcard *.cpp)
