@@ -12,7 +12,7 @@ ifeq ($(OS), Windows_NT)
         CXX := clang++
         LIBPATH := /clang64/lib
     else
-        $(error Unsupported Windows environment.)
+        $(error Unsupported Windows environment)
     endif
 else
     ifeq ($(shell uname -s), Darwin)

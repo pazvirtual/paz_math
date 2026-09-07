@@ -16,7 +16,7 @@ ifeq ($(OS), Windows_NT)
         LIBPATH := /clang64/lib
         INCLPATH := /clang64/include
     else
-        $(error Unsupported Windows environment.)
+        $(error Unsupported Windows environment)
     endif
 else
     ifeq ($(shell uname -s), Darwin)
