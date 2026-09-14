@@ -190,7 +190,8 @@ paz::ComplexMat paz::ComplexMat::inv() const
     return res;
 }
 
-paz::ComplexMat paz::ComplexMat::solve(const ComplexMat& b) const //TEMP - not `ComplexMatRef` to support `Eigen::Map`
+//TEMP - not `ComplexMatRef` to support `Eigen::Map`
+paz::ComplexMat paz::ComplexMat::solve(const ComplexMat& b) const
 {
     if(rows() != b.rows())
     {
@@ -234,7 +235,8 @@ paz::ComplexMat paz::ComplexMat::chol() const
     return res;
 }
 
-paz::ComplexMat paz::ComplexMat::cholUpdate(const ComplexMat& m, double a) const //TEMP - not `ComplexMatRef` to support `Eigen::Map`
+//TEMP - not `ComplexMatRef` to support `Eigen::Map`
+paz::ComplexMat paz::ComplexMat::cholUpdate(const ComplexMat& m, double a) const
 {
     if(empty())
     {
@@ -329,7 +331,7 @@ paz::ComplexVec paz::ComplexMat::eig(ComplexMat& vecs) const
     ComplexVec vals(rows());
     for(std::size_t i = 0; i < rows(); ++i)
     {
-        vals(i) = eig.eigenvalues()(i).imag() ? nan() : eig.eigenvalues()(i). //TEMP
+        vals(i) = eig.eigenvalues()(i).imag() ? nan() : eig.eigenvalues()(i).
             real();
     }
     vecs = ComplexMat(rows(), cols());
@@ -343,7 +345,8 @@ paz::ComplexVec paz::ComplexMat::eig(ComplexMat& vecs) const
     return vals;
 }
 
-void paz::ComplexMat::qr(ComplexMat& q, ComplexMat& r) const //TEMP - not `ComplexMatRef` to support `Eigen::Map`
+//TEMP - not `ComplexMatRef` to support `Eigen::Map`
+void paz::ComplexMat::qr(ComplexMat& q, ComplexMat& r) const
 {
     if(empty())
     {
@@ -365,8 +368,9 @@ void paz::ComplexMat::qr(ComplexMat& q, ComplexMat& r) const //TEMP - not `Compl
     eigenR = qr.matrixQR().triangularView<Eigen::Upper>();
 }
 
+//TEMP - not `ComplexMatRef` to support `Eigen::Map`
 void paz::ComplexMat::qr(ComplexMat& q, ComplexMat& r, std::vector<std::size_t>&
-    p) const //TEMP - not `ComplexMatRef` to support `Eigen::Map`
+    p) const
 {
     if(empty())
     {

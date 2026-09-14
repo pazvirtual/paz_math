@@ -184,7 +184,8 @@ paz::Mat paz::Mat::inv() const
     return res;
 }
 
-paz::Mat paz::Mat::solve(const Mat& b) const //TEMP - not `MatRef` to support `Eigen::Map`
+//TEMP - not `MatRef` to support `Eigen::Map`
+paz::Mat paz::Mat::solve(const Mat& b) const
 {
     if(rows() != b.rows())
     {
@@ -228,7 +229,8 @@ paz::Mat paz::Mat::chol() const
     return res;
 }
 
-paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const //TEMP - not `MatRef` to support `Eigen::Map`
+//TEMP - not `MatRef` to support `Eigen::Map`
+paz::Mat paz::Mat::cholUpdate(const Mat& m, double a) const
 {
     if(empty())
     {
@@ -294,7 +296,7 @@ paz::Vec paz::Mat::eig() const
     Vec vals(rows());
     for(std::size_t i = 0; i < rows(); ++i)
     {
-        vals(i) = eig.eigenvalues()(i).imag() ? nan() : eig.eigenvalues()(i). //TEMP
+        vals(i) = eig.eigenvalues()(i).imag() ? nan() : eig.eigenvalues()(i).
             real();
     }
     return vals;
@@ -324,7 +326,7 @@ paz::Vec paz::Mat::eig(Mat& vecs) const
     Vec vals(rows());
     for(std::size_t i = 0; i < rows(); ++i)
     {
-        vals(i) = eig.eigenvalues()(i).imag() ? nan() : eig.eigenvalues()(i). //TEMP
+        vals(i) = eig.eigenvalues()(i).imag() ? nan() : eig.eigenvalues()(i).
             real();
     }
     vecs = Mat(rows(), cols());
@@ -332,14 +334,15 @@ paz::Vec paz::Mat::eig(Mat& vecs) const
     {
         for(std::size_t j = 0; j < cols(); ++j)
         {
-            vecs(i, j) = eig.eigenvectors()(i, j).imag() ? nan() : eig. //TEMP
+            vecs(i, j) = eig.eigenvectors()(i, j).imag() ? nan() : eig.
                 eigenvectors()(i, j).real();
         }
     }
     return vals;
 }
 
-void paz::Mat::qr(Mat& q, Mat& r) const //TEMP - not `MatRef` to support `Eigen::Map`
+//TEMP - not `MatRef` to support `Eigen::Map`
+void paz::Mat::qr(Mat& q, Mat& r) const
 {
     if(empty())
     {
@@ -361,7 +364,8 @@ void paz::Mat::qr(Mat& q, Mat& r) const //TEMP - not `MatRef` to support `Eigen:
     eigenR = qr.matrixQR().triangularView<Eigen::Upper>();
 }
 
-void paz::Mat::qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const //TEMP - not `MatRef` to support `Eigen::Map`
+//TEMP - not `MatRef` to support `Eigen::Map`
+void paz::Mat::qr(Mat& q, Mat& r, std::vector<std::size_t>& p) const
 {
     if(empty())
     {

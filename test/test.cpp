@@ -63,7 +63,8 @@ int main()
     }
     catch(const std::exception& e)
     {
-        std::cerr << "Warning: " << e.what() << std::endl; //TEMP - remove randomness and add proper unit tests
+        //TEMP - remove randomness and add proper unit tests
+        std::cerr << "Warning: " << e.what() << std::endl;
     }
 
     auto aNew = a;

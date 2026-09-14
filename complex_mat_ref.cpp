@@ -146,7 +146,7 @@ paz::ComplexMat paz::ComplexMatRef::normalized() const
     return m;
 }
 
-paz::ComplexMat paz::ComplexMatRef::prod(const ComplexMatRef& rhs) const // elementwise
+paz::ComplexMat paz::ComplexMatRef::prod(const ComplexMatRef& rhs) const
 {
     if(rows() != rhs.rows() || cols() != rhs.cols())
     {
@@ -160,7 +160,7 @@ paz::ComplexMat paz::ComplexMatRef::prod(const ComplexMatRef& rhs) const // elem
     return m;
 }
 
-paz::ComplexMat paz::ComplexMatRef::quot(const ComplexMatRef& rhs) const // elementwise
+paz::ComplexMat paz::ComplexMatRef::quot(const ComplexMatRef& rhs) const
 {
     if(rows() != rhs.rows() || cols() != rhs.cols())
     {
