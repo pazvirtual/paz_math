@@ -38,8 +38,8 @@ CFLAGS := -O$(OPTIM) -Wall -Wextra -Wno-missing-braces
 ifeq ($(OSPRETTY), macOS)
     CFLAGS += -mmacosx-version-min=$(MINMACOSVER) -Wunguarded-availability
 endif
-#CXXFLAGS := -std=c++$(CXXVER) $(CFLAGS) -Wold-style-cast -IEigen
-CXXFLAGS := -std=c++$(CXXVER) $(CFLAGS) -IEigen
+#CXXFLAGS := -std=c++$(CXXVER) $(CFLAGS) -Wold-style-cast -Ieigen/Eigen
+CXXFLAGS := -std=c++$(CXXVER) $(CFLAGS) -Ieigen/Eigen
 ifeq ($(CC), clang)
     CXXFLAGS += -Wno-string-plus-int
 endif

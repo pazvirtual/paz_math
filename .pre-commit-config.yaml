@@ -12,6 +12,7 @@ repos:
     rev: 1b68e86ecd79d6d7c5db499fac5743fdfd0a2f8a
     hooks:
       - id: check-chars
+        exclude: ^\.gitmodules$
       - id: check-filenames
       - id: check-line-length
   - repo: local
