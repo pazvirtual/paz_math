@@ -1,4 +1,3 @@
-exclude: ^Eigen/
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -15,6 +14,7 @@ repos:
         exclude: ^\.gitmodules$
       - id: check-filenames
       - id: check-line-length
+        exclude: ^\.github/
   - repo: local
     hooks:
       - id: test
